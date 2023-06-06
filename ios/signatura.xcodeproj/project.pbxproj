@@ -21,6 +21,7 @@
 		007AF953C0F846E4BDD066BB /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA8F9B5D7ED445DEB6F061BC /* PlusJakartaSans-Medium.ttf */; };
 		35F53BA1B6BB45E49BCBB789 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1B057760061143C38323174F /* PlusJakartaSans-Regular.ttf */; };
 		AEBB3977401C4DC2AE10D70F /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 54348A36898C45E1BD9CD161 /* PlusJakartaSans-SemiBold.ttf */; };
+		6D1D88E4066B4120B9BA710B /* Oswald-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 37DA89B8F103401688711EB4 /* Oswald-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +59,7 @@
 		AA8F9B5D7ED445DEB6F061BC /* PlusJakartaSans-Medium.ttf */ = {isa = PBXFileReference; name = "PlusJakartaSans-Medium.ttf"; path = "../assets/fonts/PlusJakartaSans-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		1B057760061143C38323174F /* PlusJakartaSans-Regular.ttf */ = {isa = PBXFileReference; name = "PlusJakartaSans-Regular.ttf"; path = "../assets/fonts/PlusJakartaSans-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		54348A36898C45E1BD9CD161 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; name = "PlusJakartaSans-SemiBold.ttf"; path = "../assets/fonts/PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		37DA89B8F103401688711EB4 /* Oswald-Regular.ttf */ = {isa = PBXFileReference; name = "Oswald-Regular.ttf"; path = "../assets/fonts/Oswald-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -173,6 +175,7 @@
 				AA8F9B5D7ED445DEB6F061BC /* PlusJakartaSans-Medium.ttf */,
 				1B057760061143C38323174F /* PlusJakartaSans-Regular.ttf */,
 				54348A36898C45E1BD9CD161 /* PlusJakartaSans-SemiBold.ttf */,
+				37DA89B8F103401688711EB4 /* Oswald-Regular.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -281,6 +284,7 @@
 				007AF953C0F846E4BDD066BB /* PlusJakartaSans-Medium.ttf in Resources */,
 				35F53BA1B6BB45E49BCBB789 /* PlusJakartaSans-Regular.ttf in Resources */,
 				AEBB3977401C4DC2AE10D70F /* PlusJakartaSans-SemiBold.ttf in Resources */,
+				6D1D88E4066B4120B9BA710B /* Oswald-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
