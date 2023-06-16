@@ -4,66 +4,34 @@ import {color} from '../styles/variables';
 import IconContainer from './IconContainer';
 import {Body3, Body6, Body7, Heading5} from './typographies';
 import styled from 'styled-components/native';
-
-const newestList = [
-  {
-    id: 1,
-    title: 'Lorem ipsum dolor sit amet',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    signeeId: 1,
-    signee: 'John Doe',
-    requesteeId: 4,
-    requestee: 'Manuel Neuer',
-    date: '17/12/2023',
-    status: 'Pending',
-  },
-  {
-    id: 2,
-    title: 'Lorem ipsum dolor sit amet',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    signeeId: 2,
-    signee: 'Mark Zuckerberg',
-    requesteeId: 1,
-    requestee: 'John Doe',
-    date: '17/12/2023',
-    status: 'Done',
-  },
-  {
-    id: 3,
-    title: 'Lorem ipsum dolor sit amet',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    signeeId: 1,
-    signee: 'John Doe',
-    requesteeId: 3,
-    requestee: 'Gaming Chair nigger nigger nigger nigger nigger',
-    date: '17/12/2023',
-    status: 'Rejected',
-  },
-];
+import {newestList} from '../helper/newestList';
 
 const ExchangeCardContainer = styled.Pressable`
   border-radius: 12px;
   border: 1px solid ${props => props.color};
-  flex-direction: row;
+  flex-direction: ${props => (props.type === 'list' ? 'row' : 'column')}
   overflow: hidden;
   margin-bottom: ${moderateScale(12)}px;
+  margin-top: ${props =>
+    props.type === 'list' ? 0 : moderateScale(12) + 'px'};
 `;
 
 const LeftFlag = styled.View`
   background-color: ${props => props.color};
   justify-content: center;
+  align-items: center;
 `;
 
 const Detail = styled.View`
   padding: 12px;
   gap: ${moderateScale(6)}px;
-  flex: 1;
+  flex: ${props => (props.type === 'list' ? 1 : 'none')};
 `;
 
 const DetailDuo = styled.View`
-  flex-direction: row;
+  flex-direction: ${props => (props.type === 'list' ? 'row' : 'column-reverse')}
   justify-content: space-between;
+  gap: ${moderateScale(6)}px;
 `;
 
 const Badge = styled.View`
@@ -73,14 +41,16 @@ const Badge = styled.View`
   justify-content: center;
   flex-direction: row;
   align-items: center;
-  max-width: ${moderateScale(150)}px;
+  max-width: ${props =>
+    props.type === 'list' ? moderateScale(150) + 'px' : '100%'};
 `;
 
 const Pill = styled(Badge)`
-  min-width: ${moderateScale(64)}px;
+  max-width: ${props =>
+    props.type === 'list' ? moderateScale(64) + 'px' : '100%'};
 `;
 
-export default memo(function ExchangeCard({id, navigation}) {
+export default memo(function ExchangeCard({id, navigation, type}) {
   const userId = 1;
   const {
     title,
@@ -100,23 +70,24 @@ export default memo(function ExchangeCard({id, navigation}) {
 
   return (
     <ExchangeCardContainer
-      onPress={() => navigation.navigate('Detail', {id: id})}
-      color={colorTheme}>
+      onPress={() => navigation.navigate('Detail', {id})}
+      color={colorTheme}
+      type={type}>
       <LeftFlag color={colorTheme}>
         <IconContainer source={icon} size={24} />
       </LeftFlag>
-      <Detail>
-        <DetailDuo>
-          <Heading5 color={colorTheme} numberOfLines={1}>
+      <Detail type={type}>
+        <DetailDuo type={type}>
+          <Heading5 color={colorTheme} numberOfLines={type === 'list' ? 1 : 0}>
             {title}
           </Heading5>
           <Body7 color={color.gray1}>{date}</Body7>
         </DetailDuo>
-        <Body6 color={color.gray1} numberOfLines={1}>
+        <Body6 color={color.gray1} numberOfLines={type === 'list' ? 1 : 0}>
           {description}
         </Body6>
-        <DetailDuo>
-          <Badge color={colorTheme}>
+        <DetailDuo type={type}>
+          <Badge color={colorTheme} type={type}>
             <Body3 color={color.white} numberOfLines={1}>
               {isRequestee ? 'From:' : 'To:'}{' '}
               <Body6 color={color.white}>
