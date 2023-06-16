@@ -1,5 +1,12 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {View, Platform, Pressable, ScrollView, Keyboard} from 'react-native';
+import {
+  View,
+  Platform,
+  Pressable,
+  ScrollView,
+  Keyboard,
+  StatusBar,
+} from 'react-native';
 import styled from 'styled-components/native';
 import {useDispatch, useSelector} from 'react-redux';
 import {color} from '../styles/variables';
@@ -84,6 +91,7 @@ export default function Login({navigation}) {
 
   return (
     <KeyView>
+      <StatusBar translucent backgroundColor="transparent" />
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,

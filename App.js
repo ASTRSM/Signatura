@@ -14,7 +14,7 @@ import AddRequest from './src/pages/AddRequest';
 import ScanResult from './src/pages/ScanResult';
 import {useSelector} from 'react-redux';
 import {selectAuth} from './src/redux/slices/authSlice';
-import {Image, Text, View} from 'react-native';
+import {Image} from 'react-native';
 import Bottomnav from './src/components/BottomNav';
 import Header from './src/components/Header';
 import {color} from './src/styles/variables';
@@ -29,8 +29,7 @@ function ListStackScreen() {
   return (
     <ListStack.Navigator screenOptions={{headerShown: false}}>
       <ListStack.Screen name="ListScreen" component={List} />
-      <ListStack.Screen name="Detail" component={Detail} />
-      <Tab.Screen name="AddRequest" component={AddRequest} />
+      <ListStack.Screen name="AddRequest" component={AddRequest} />
     </ListStack.Navigator>
   );
 }
@@ -59,7 +58,7 @@ export default function App() {
   console.log('userData', userData);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer statusBarColor={color.primary}>
       {!userData?.data ? (
         <Stack.Navigator screenOptions={{headerShown: false}}>
           <Stack.Screen name="Login" component={Login} />
@@ -102,6 +101,11 @@ export default function App() {
           <Tab.Screen
             name="Scan"
             component={ScanStackScreen}
+            options={{headerShown: false}}
+          />
+          <ListStack.Screen
+            name="Detail"
+            component={Detail}
             options={{headerShown: false}}
           />
         </Tab.Navigator>

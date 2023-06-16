@@ -2,6 +2,27 @@ import styled from 'styled-components/native';
 import {moderateScale, scale} from 'react-native-size-matters';
 import {color} from '../styles/variables';
 
+export const Display1 = styled.Text`
+  font-family: 'PlusJakartaSans-SemiBold';
+  font-size: ${moderateScale(24)}px;
+  line-height: ${moderateScale(32)}px;
+  color: ${props => props.color || color.white};
+`;
+
+export const Display2 = styled.Text`
+  font-family: 'PlusJakartaSans-SemiBold';
+  font-size: ${moderateScale(16)}px;
+  line-height: ${moderateScale(24)}px;
+  color: ${props => props.color || color.gray1};
+`;
+
+export const Display3 = styled.Text`
+  font-family: 'PlusJakartaSans-Light';
+  font-size: ${moderateScale(15)}px;
+  line-height: ${moderateScale(20)}px;
+  color: ${props => props.color || color.gray1};
+`;
+
 export const Display5 = styled.Text`
   font-family: 'Oswald-Regular';
   font-size: ${moderateScale(70)}px;
@@ -17,10 +38,17 @@ export const Display6 = styled.Text`
   color: ${props => props.color || color.gray1};
 `;
 
+export const Heading1 = styled.Text`
+  font-family: 'PlusJakartaSans-Bold';
+  font-size: ${moderateScale(20)}px;
+  line-height: ${moderateScale(28)}px;
+  color: ${props => props.color || color.gray1};
+`;
+
 export const Heading2 = styled.Text`
   font-family: 'PlusJakartaSans-Bold';
   font-size: ${moderateScale(16)}px;
-  line-height: ${moderateScale(24)}px;
+  line-height: ${moderateScale(20)}px;
   color: ${props => props.color || color.gray1};
 `;
 

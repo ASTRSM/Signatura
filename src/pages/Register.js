@@ -1,5 +1,5 @@
 import React, {useCallback, useState} from 'react';
-import {View, Platform, Pressable, ScrollView} from 'react-native';
+import {View, Platform, Pressable, ScrollView, StatusBar} from 'react-native';
 import styled from 'styled-components/native';
 import {useDispatch, useSelector} from 'react-redux';
 import {color} from '../styles/variables';
@@ -73,6 +73,7 @@ export default function Register() {
     <KeyView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       testID="register-page">
+      <StatusBar translucent backgroundColor="transparent" />
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,

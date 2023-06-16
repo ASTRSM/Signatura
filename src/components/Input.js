@@ -42,7 +42,7 @@ export const Input = memo(
     setInput,
     textInput,
     isSecret,
-    handleError,
+    handleError = () => {},
     handleKeyboard = () => {},
     password = '',
     testID,

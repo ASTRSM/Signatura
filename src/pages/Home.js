@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, ScrollView, Text, View} from 'react-native';
+import {Button, ScrollView, StatusBar, Text, View} from 'react-native';
 import {useDispatch} from 'react-redux';
 import KeyView from '../components/KeyView';
 import Title2 from '../components/Title2';
@@ -16,6 +16,7 @@ import {color} from '../styles/variables';
 import {moderateVerticalScale, moderateScale} from 'react-native-size-matters';
 import ExchangeCard from '../components/ExchangeCard';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
+import {newestList} from '../helper/newestList';
 
 const HomeContainer = styled.View`
   padding: 0 ${moderateScale(24)}px;
@@ -93,39 +94,10 @@ const dashboardExample = {
   toSign: '04',
 };
 
-const newestList = [
-  {
-    id: 1,
-    title: 'Lorem ipsum dolor sit amet',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    signee: 'John Doe',
-    requestee: 'Mark Zuckerberg',
-    date: '17/12/2023',
-    status: 'Pending',
-  },
-  {
-    id: 2,
-    title: 'Lorem ipsum dolor sit amet',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    signee: 'Angela Merkel',
-    requestee: 'Tony Stark',
-    date: '17/12/2023',
-    status: 'Done',
-  },
-  {
-    id: 3,
-    title: 'Lorem ipsum dolor sit amet',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    signee: 'Kanye West',
-    requestee: 'Elon Musk',
-    date: '17/12/2023',
-    status: 'Rejected',
-  },
-];
-
 export default function Home({navigation}) {
   return (
     <KeyView>
+      <StatusBar backgroundColor={color.primary} />
       <HomeContainer>
         <Title2 title="Dashboard" />
         <DashboardContainer>
@@ -178,7 +150,12 @@ export default function Home({navigation}) {
         <Title2 title="Latest Exchange" />
         <ExchangeContainer>
           {newestList.map(item => (
-            <ExchangeCard key={item.id} id={item.id} navigation={navigation} />
+            <ExchangeCard
+              key={item.id}
+              id={item.id}
+              navigation={navigation}
+              type="list"
+            />
           ))}
         </ExchangeContainer>
       </HomeContainer>
