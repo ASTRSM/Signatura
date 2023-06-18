@@ -23,6 +23,13 @@ export const Display3 = styled.Text`
   color: ${props => props.color || color.gray1};
 `;
 
+export const Display4 = styled.Text`
+  font-family: 'PlusJakartaSans-ExtraLight';
+  font-size: ${moderateScale(12)}px;
+  line-height: ${moderateScale(16)}px;
+  color: ${props => props.color || color.gray1};
+`;
+
 export const Display5 = styled.Text`
   font-family: 'Oswald-Regular';
   font-size: ${moderateScale(70)}px;

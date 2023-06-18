@@ -21,8 +21,8 @@ const SignatureContainer = styled.View`
 `;
 
 const SignatureImage = styled.Image`
-  max-width: ${moderateScale(150)}px;
-  max-height: ${moderateScale(150)}px;
+  width: ${moderateScale(150)}px;
+  height: ${moderateScale(150)}px;
   object-fit: contain;
 `;
 
@@ -48,3 +48,13 @@ export default function Signature({image, id, isRequestee}) {
     </ImageContainer>
   );
 }
+
+export const SignatureOnly = ({image, id, isRequestee}) => {
+  return (
+    <ImageContainer>
+      <SignatureImage source={image} />
+      <XLine color={isRequestee ? color.primary : color.secondary} />
+      <Body2>{`#SGN-${id}`}</Body2>
+    </ImageContainer>
+  );
+};

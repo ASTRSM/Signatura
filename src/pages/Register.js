@@ -47,13 +47,15 @@ const ShapeTop = styled.Image`
   width: ${scale(357 / 2)}px;
 `;
 
-export default function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function Register({navigation, route}) {
+  const params = route.params;
+  const pageType = params?.edit ? 'Edit Profile' : 'Register';
+  const [email, setEmail] = useState(params?.email ?? '');
+  const [password, setPassword] = useState(params?.password ?? '');
   const [confirmPassword, setConfirm] = useState('');
-  const [birthday, setBirthday] = useState('');
-  const [institution, setInstitution] = useState('');
-  const [description, setDescription] = useState('');
+  const [birthday, setBirthday] = useState(new Date(params?.birthday) ?? '');
+  const [institution, setInstitution] = useState(params?.institution ?? '');
+  const [description, setDescription] = useState(params?.description ?? '');
   const [inputError, setInputError] = useState({});
 
   let disabled = false;
@@ -83,8 +85,8 @@ export default function Register() {
         <ShapeTop source={require('../../assets/images/ShapeLoginTop.png')} />
         <LoginView>
           <LoginHeader>
-            <Heading3>Register</Heading3>
-            <Body1>Please register to continue</Body1>
+            <Heading3>{pageType}</Heading3>
+            {params?.edit ? null : <Body1>Please register to continue</Body1>}
           </LoginHeader>
           <Input
             type="Email"
@@ -94,27 +96,32 @@ export default function Register() {
             isSecret={false}
             handleError={handleError}
           />
-          <Input
-            type="Password"
-            isImportant={true}
-            setInput={setPassword}
-            textInput={password}
-            isSecret={true}
-            handleError={handleError}
-          />
-          <Input
-            type="Confirm Password"
-            isImportant={true}
-            setInput={setConfirm}
-            textInput={confirmPassword}
-            isSecret={true}
-            handleError={handleError}
-            password={password}
-          />
+          {params?.edit ? null : (
+            <>
+              <Input
+                type="Password"
+                isImportant={true}
+                setInput={setPassword}
+                textInput={password}
+                isSecret={true}
+                handleError={handleError}
+              />
+              <Input
+                type="Confirm Password"
+                isImportant={true}
+                setInput={setConfirm}
+                textInput={confirmPassword}
+                isSecret={true}
+                handleError={handleError}
+                password={password}
+              />
+            </>
+          )}
           <AndroidDatePicker
             type="Birthday"
             isImportant={true}
-            setInput={setBirthday}
+            setDate={setBirthday}
+            date={birthday}
             handleError={handleError}
             testID="birthday-input"
           />
@@ -144,7 +151,7 @@ export default function Register() {
             onPress={() => {
               console.log('boo');
             }}>
-            <AuthButtonText>REGISTER</AuthButtonText>
+            <AuthButtonText>{pageType}</AuthButtonText>
           </AuthButton>
         </LoginView>
       </ScrollView>

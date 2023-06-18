@@ -15,11 +15,13 @@ const ButtonsContainer = styled.View`
 `;
 
 const Button = styled.Pressable`
+  flex: 1;
   padding: ${moderateScale(12)}px;
   gap: ${moderateScale(6)}px;
   border-radius: 10px;
   flex-direction: row;
   min-width: ${moderateScale(100)}px;
+  min-height: ${moderateScale(45)}px;
   justify-content: center;
   align-items: center;
   border: 1px solid ${props => props.theme};
@@ -36,24 +38,20 @@ export default function DetailButtons({
   return (
     <ButtonsContainer>
       {status === 'Done' && (
-        <DownloadButton
-          theme={theme}
-          onPress={captureScreenshot}
-          type="download"
-        />
+        <Buttons theme={theme} onPress={captureScreenshot} type="download" />
       )}
       {status !== 'Done' && isRequestee && (
-        <DownloadButton theme={color.gray3} type="download" disabled={true} />
+        <Buttons theme={color.gray3} type="download" disabled={true} />
       )}
       {status === 'Pending' && !isRequestee && (
-        <DownloadButton
+        <Buttons
           theme={color.danger}
           onPress={() => setModalVisible('reject')}
           type="reject"
         />
       )}
       {status === 'Pending' && !isRequestee && (
-        <DownloadButton
+        <Buttons
           theme={color.success}
           onPress={() => setModalVisible('approve')}
           type="approve"
@@ -61,10 +59,10 @@ export default function DetailButtons({
         />
       )}
       {status === 'Rejected' && !isRequestee && (
-        <DownloadButton theme={color.gray3} type="reject" disabled={true} />
+        <Buttons theme={color.gray3} type="reject" disabled={true} />
       )}
       {status === 'Rejected' && !isRequestee && (
-        <DownloadButton
+        <Buttons
           theme={color.success}
           onPress={() => setModalVisible('approve')}
           type="approve"
@@ -83,8 +81,8 @@ export function ModalButtons({
 }) {
   return (
     <ButtonsContainer>
-      <DownloadButton theme={color.danger} onPress={onCancel} type="Cancel" />
-      <DownloadButton
+      <Buttons theme={color.danger} onPress={onCancel} type="Cancel" />
+      <Buttons
         theme={color.success}
         onPress={modalType === 'reject' ? onPressReject : onPressApprove}
         type="Yes"
@@ -94,7 +92,7 @@ export function ModalButtons({
   );
 }
 
-const DownloadButton = ({theme, onPress, type, fill, disabled = false}) => {
+export const Buttons = ({theme, onPress, type, fill, disabled = false}) => {
   const capitalizedType = capFirstLetter(type);
   return (
     <Button theme={theme} onPress={onPress} fill={fill} disabled={disabled}>

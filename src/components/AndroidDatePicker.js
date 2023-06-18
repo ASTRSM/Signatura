@@ -31,9 +31,9 @@ export default memo(function AndroidDatePicker({
   type,
   isImportant,
   handleError,
-  setInput,
+  setDate,
+  date,
 }) {
-  const [date, setDate] = useState(new Date());
   const [inputError, setInputError] = useState('');
 
   useEffect(() => {
@@ -59,7 +59,6 @@ export default memo(function AndroidDatePicker({
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate;
     setDate(currentDate);
-    setInput(currentDate);
   };
 
   const showMode = currentMode => {

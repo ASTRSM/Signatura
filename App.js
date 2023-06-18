@@ -38,7 +38,7 @@ function ProfileStackScreen() {
   return (
     <ProfileStack.Navigator screenOptions={{headerShown: false}}>
       <ProfileStack.Screen name="ProfileScreen" component={Profile} />
-      <ProfileStack.Screen name="EditProfile" component={EditProfile} />
+      <ProfileStack.Screen name="EditProfile" component={Register} />
     </ProfileStack.Navigator>
   );
 }
