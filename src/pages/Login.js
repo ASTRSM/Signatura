@@ -15,6 +15,7 @@ import {Input} from '../components/Input';
 import {scale, verticalScale} from 'react-native-size-matters';
 import {loginExample} from '../redux/slices/authSlice';
 import KeyView from '../components/KeyView';
+import useInputError from '../hooks/InputError'
 
 const AuthButton = styled.Pressable`
   background-color: ${color.primary};
@@ -70,7 +71,7 @@ const ShapeTop = styled.Image`
 export default function Login({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [inputError, setInputError] = useState({});
+  const [inputError, handleError] = useInputError();
 
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
@@ -83,11 +84,6 @@ export default function Login({navigation}) {
   ) {
     disabled = true;
   }
-
-  // useCallback for Input memoization
-  const handleError = useCallback((type, counter) => {
-    setInputError(prevState => ({...prevState, [type]: counter}));
-  }, []);
 
   return (
     <KeyView>

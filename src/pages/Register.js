@@ -7,6 +7,7 @@ import {Heading3, Body1, Body2} from '../components/typographies';
 import {Input} from '../components/Input';
 import {scale, verticalScale} from 'react-native-size-matters';
 import AndroidDatePicker from '../components/AndroidDatePicker';
+import useInputError from '../hooks/InputError';
 
 const KeyView = styled.KeyboardAvoidingView`
   background-color: ${color.white};
@@ -56,7 +57,7 @@ export default function Register({navigation, route}) {
   const [birthday, setBirthday] = useState(new Date(params?.birthday) ?? '');
   const [institution, setInstitution] = useState(params?.institution ?? '');
   const [description, setDescription] = useState(params?.description ?? '');
-  const [inputError, setInputError] = useState({});
+  const [inputError, handleError] = useInputError();
 
   let disabled = false;
   if (
@@ -65,11 +66,6 @@ export default function Register({navigation, route}) {
   ) {
     disabled = true;
   }
-
-  // useCallback for Input memoization
-  const handleError = useCallback((type, counter) => {
-    setInputError(prevState => ({...prevState, [type]: counter}));
-  }, []);
 
   return (
     <KeyView
