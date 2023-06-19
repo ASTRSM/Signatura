@@ -45,7 +45,7 @@ const Badge = styled.View`
     props.type === 'list' ? moderateScale(150) + 'px' : '100%'};
 `;
 
-const Pill = styled(Badge)`
+export const Pill = styled(Badge)`
   max-width: ${props =>
     props.type === 'list' ? moderateScale(64) + 'px' : '100%'};
 `;

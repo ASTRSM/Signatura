@@ -24,7 +24,7 @@ export const Display3 = styled.Text`
 `;
 
 export const Display4 = styled.Text`
-  font-family: 'PlusJakartaSans-ExtraLight';
+  font-family: 'PlusJakartaSans-ExtraLightItalic';
   font-size: ${moderateScale(12)}px;
   line-height: ${moderateScale(16)}px;
   color: ${props => props.color || color.gray1};
@@ -126,5 +126,12 @@ export const Body8 = styled.Text`
   font-family: 'PlusJakartaSans-Italic';
   font-size: ${moderateScale(8)}px;
   line-height: ${moderateScale(12)}px;
+  color: ${props => props.color || color.gray1};
+`;
+
+export const Body9 = styled.Text`
+  font-family: 'PlusJakartaSans-ExtraLightItalic';
+  font-size: ${moderateScale(12)}px;
+  line-height: ${moderateScale(16)}px;
   color: ${props => props.color || color.gray1};
 `;

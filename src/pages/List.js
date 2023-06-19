@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {ScrollView, StatusBar, Text, View} from 'react-native';
 import KeyView from '../components/KeyView';
 import Switch from '../components/Switch';
-import Title from '../components/Title';
+import Title from '../components/Titles';
 import {color} from '../styles/variables';
 import styled from 'styled-components/native';
 import {moderateScale} from 'react-native-size-matters';
@@ -48,6 +48,8 @@ export default function List({navigation}) {
           status={status}
           setStatus={setStatus}
           handleFilter={handleFilter}
+          isRequest={page === 'request'}
+          navigation={navigation}
         />
         <ScrollView>
           {newestList.map(item => (

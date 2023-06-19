@@ -3,7 +3,7 @@ import {Pressable, StatusBar, StyleSheet, View, Dimensions} from 'react-native';
 import ExchangeCard from '../components/ExchangeCard';
 import styled from 'styled-components/native';
 import {moderateScale} from 'react-native-size-matters';
-import Title from '../components/Title';
+import Title from '../components/Titles';
 import {Body2, Body5} from '../components/typographies';
 import {color} from '../styles/variables';
 import Signature from '../components/Signature';
@@ -23,7 +23,6 @@ const Meta = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-end;
-  margin-top: ${moderateScale(32)}px;
 `;
 
 const NoDocument = styled.View`

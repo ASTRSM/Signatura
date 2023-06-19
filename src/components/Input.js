@@ -41,7 +41,7 @@ export const Input = memo(
     isImportant,
     setInput,
     textInput,
-    isSecret,
+    isSecret = false,
     handleError = () => {},
     handleKeyboard = () => {},
     password = '',

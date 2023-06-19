@@ -10,7 +10,7 @@ const Container = styled.View`
   flex-direction: row;
   justify-content: space-between;
   gap: ${moderateScale(12)}px;
-  margin: ${moderateScale(24)}px 0;
+  margin-bottom: ${moderateScale(24)}px;
   align-items: center;
 `;
 

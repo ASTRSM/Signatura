@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, ScrollView, StatusBar, Text, View} from 'react-native';
 import {useDispatch} from 'react-redux';
 import KeyView from '../components/KeyView';
-import Title2 from '../components/Title2';
+import {Title2} from '../components/Titles';
 import {logoutExample} from '../redux/slices/authSlice';
 import styled from 'styled-components/native';
 import {

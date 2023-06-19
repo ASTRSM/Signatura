@@ -6,7 +6,7 @@ import {Display2, Display3} from '../components/typographies';
 import {color} from '../styles/variables';
 import {capFirstLetter} from '../helper/capFirstLetter';
 
-const ButtonsContainer = styled.View`
+export const ButtonsContainer = styled.View`
   flex-direction: row;
   justify-content: center;
   align-items: center;

@@ -10,13 +10,14 @@ import {Picker} from '@react-native-picker/picker';
 const FilterContainer = styled.View`
   flex-direction: column;
   margin-bottom: ${moderateScale(12)}px;
+  gap: ${moderateScale(8)}px;
 `;
 
 const SearchContainer = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0 ${moderateScale(12)}px;
+  padding: 0 ${moderateScale(8)}px;
   background-color: ${color.white};
   border-radius: 30px;
   border: 1px solid ${color.gray5};
@@ -52,11 +53,17 @@ const FilterLine = styled.View`
 `;
 
 const FilterButton = styled.Pressable`
-  background-color: ${color.success};
+  background-color: ${props => props.color};
   border-radius: 30px;
   padding: ${moderateScale(8)}px ${moderateScale(16)}px;
   align-items: center;
   justify-content: center;
+  flex: 1;
+`;
+
+const ButtonsContainer = styled.View`
+  flex-direction: row;
+  gap: ${moderateScale(8)}px;
 `;
 
 export default function Filter({
@@ -69,20 +76,12 @@ export default function Filter({
   status,
   setStatus,
   handleFilter,
+  isRequest,
+  navigation,
 }) {
   return (
     <FilterContainer>
-      <SearchContainer>
-        <SearchInput
-          placeholder="Search"
-          value={search}
-          onChangeText={setSearch}
-        />
-        <IconContainer
-          size={15}
-          source={require('../../assets/Icons/Search.png')}
-        />
-      </SearchContainer>
+      <Searchbar search={search} setSearch={setSearch} />
       <SortingContainer>
         <FilterItem
           onPress={() => setDateSort(dateSort === 'desc' ? 'asc' : 'desc')}>
@@ -141,9 +140,18 @@ export default function Filter({
           />
         </Picker>
       </SortingContainer>
-      <FilterButton onPress={handleFilter}>
-        <Body2 color={color.gray2}>Filter</Body2>
-      </FilterButton>
+      <ButtonsContainer>
+        <FilterButton onPress={handleFilter} color={color.success}>
+          <Body2 color={color.gray2}>Filter</Body2>
+        </FilterButton>
+        {isRequest && (
+          <FilterButton
+            color={color.primary}
+            onPress={() => navigation.navigate('AddRequest')}>
+            <Body2 color={color.white}>Add Request +</Body2>
+          </FilterButton>
+        )}
+      </ButtonsContainer>
     </FilterContainer>
   );
 }
@@ -164,3 +172,19 @@ const style = StyleSheet.create({
     color: color.gray2,
   },
 });
+
+export function Searchbar({search, setSearch}) {
+  return (
+    <SearchContainer>
+      <SearchInput
+        placeholder="Search"
+        value={search}
+        onChangeText={setSearch}
+      />
+      <IconContainer
+        size={15}
+        source={require('../../assets/Icons/Search.png')}
+      />
+    </SearchContainer>
+  );
+}
