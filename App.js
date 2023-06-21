@@ -9,7 +9,6 @@ import List from './src/pages/List';
 import Profile from './src/pages/Profile';
 import Scan from './src/pages/Scan';
 import Detail from './src/pages/Detail';
-import EditProfile from './src/pages/EditProfile';
 import AddRequest from './src/pages/AddRequest';
 import ScanResult from './src/pages/ScanResult';
 import {useSelector} from 'react-redux';

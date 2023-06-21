@@ -9,7 +9,6 @@ import Title from '../components/Titles';
 import {Body2, Body5, Display2, Display4} from '../components/typographies';
 import {color} from '../styles/variables';
 import RNFS from 'react-native-fs';
-import {launchImageLibrary} from 'react-native-image-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 
 const Container = styled.View`
@@ -71,24 +70,6 @@ export default function Profile({navigation}) {
   };
 
   const pickImage = async () => {
-    // const options = {
-    //   mediaType: 'photo',
-    //   includeBase64: false,
-    //   maxHeight: 200,
-    //   maxWidth: 200,
-    // };
-    // const result = await launchImageLibrary(options, response => {
-    //   if (response.didCancel) {
-    //     setErrorText('User cancelled image picker');
-    //   } else if (response.errorCode === 'camera_unavailable') {
-    //     setErrorText('Camera not available on device');
-    //   } else if (response.errorCode === 'permission') {
-    //     setErrorText('Permission not satisfied');
-    //   } else if (response.errorCode === 'others') {
-    //     setErrorText(response.errorMessage);
-    //   }
-    // });
-
     const result = await ImagePicker.openPicker({
       width: 200,
       height: 200,

@@ -2,7 +2,7 @@ import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import supabase from '../../helper/supabaseInit';
 
 const initialState = {
-  data: 1,
+  data: null,
   error: null,
   status: 'idle',
 };

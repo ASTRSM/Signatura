@@ -37,7 +37,7 @@ export default function Scan({navigation}) {
   const [hasPermission, setHasPermission] = useState(false);
   const [errorText, setErrorText] = useState(null);
   const devices = useCameraDevices();
-  const device = devices.back;
+  const device = devices?.back;
 
   const [frameProcessor, barcodes] = useScanBarcodes([BarcodeFormat.QR_CODE], {
     checkInverted: true,
