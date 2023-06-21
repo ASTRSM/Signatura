@@ -49,12 +49,14 @@ const ShapeTop = styled.Image`
 `;
 
 export default function Register({navigation, route}) {
-  const params = route.params;
+  const params = route?.params;
   const pageType = params?.edit ? 'Edit Profile' : 'Register';
   const [email, setEmail] = useState(params?.email ?? '');
   const [password, setPassword] = useState(params?.password ?? '');
   const [confirmPassword, setConfirm] = useState('');
-  const [birthday, setBirthday] = useState(new Date(params?.birthday) ?? '');
+  const [birthday, setBirthday] = useState(
+    params?.birthday ? new Date(params?.birthday) : new Date(),
+  );
   const [institution, setInstitution] = useState(params?.institution ?? '');
   const [description, setDescription] = useState(params?.description ?? '');
   const [inputError, handleError] = useInputError();
@@ -138,6 +140,7 @@ export default function Register({navigation, route}) {
             handleError={handleError}
           />
           <AuthButton
+            testID={pageType === 'Register' ? 'register-button' : 'edit-button'}
             disabled={disabled}
             style={({pressed}) => [
               {
