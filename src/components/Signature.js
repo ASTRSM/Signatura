@@ -34,7 +34,7 @@ const XLine = styled.View`
   margin-bottom: ${moderateScale(2)}px;
 `;
 
-export default function Signature({image, id, isRequestee}) {
+export default function Signature({image, id, isRequestee = true}) {
   const QRValue = CryptoJS.AES.encrypt(id.toString(), STRING).toString();
 
   return (
