@@ -12,6 +12,7 @@
     "e2e": "detox test --configuration android.emu.debug"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.18.2",
     "@react-native-community/datetimepicker": "^7.1.0",
     "@react-native-picker/picker": "^2.4.10",
     "@react-navigation/bottom-tabs": "^6.5.7",

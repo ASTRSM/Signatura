@@ -1,13 +1,13 @@
-import React, {useCallback, useState} from 'react';
-import {View, Platform, Pressable, ScrollView, StatusBar} from 'react-native';
+import React, {useState} from 'react';
+import {Platform, ScrollView, StatusBar, ToastAndroid} from 'react-native';
 import styled from 'styled-components/native';
-import {useDispatch, useSelector} from 'react-redux';
 import {color} from '../styles/variables';
-import {Heading3, Body1, Body2} from '../components/typographies';
+import {Heading3, Body1} from '../components/typographies';
 import {Input} from '../components/Input';
 import {scale, verticalScale} from 'react-native-size-matters';
 import AndroidDatePicker from '../components/AndroidDatePicker';
 import useInputError from '../hooks/InputError';
+import {useSignUpMutation} from '../redux/slices/apiSlice';
 
 const KeyView = styled.KeyboardAvoidingView`
   background-color: ${color.white};
@@ -51,15 +51,17 @@ const ShapeTop = styled.Image`
 export default function Register({navigation, route}) {
   const params = route?.params;
   const pageType = params?.edit ? 'Edit Profile' : 'Register';
-  const [email, setEmail] = useState(params?.email ?? '');
-  const [password, setPassword] = useState(params?.password ?? '');
-  const [confirmPassword, setConfirm] = useState('');
+  const [name, setName] = useState(params?.name ?? 'Dhafa D');
+  const [email, setEmail] = useState(params?.email ?? 'ddefrito84@gmail.com');
+  const [password, setPassword] = useState(params?.password ?? '123123123');
+  const [confirmPassword, setConfirm] = useState('123123123');
   const [birthday, setBirthday] = useState(
-    params?.birthday ? new Date(params?.birthday) : new Date(),
+    params?.birthday ? new Date(params?.birthday) : new Date(2000, 0, 1),
   );
   const [institution, setInstitution] = useState(params?.institution ?? '');
   const [description, setDescription] = useState(params?.description ?? '');
   const [inputError, handleError] = useInputError();
+  const [signUp, {isLoading}] = useSignUpMutation();
 
   let disabled = false;
   if (
@@ -68,6 +70,26 @@ export default function Register({navigation, route}) {
   ) {
     disabled = true;
   }
+
+  const handlePress = async () => {
+    if (pageType === 'Register') {
+      try {
+        await signUp({
+          email,
+          password,
+          name,
+          birthday,
+          institution,
+          description,
+        }).unwrap();
+        navigation.navigate('Login');
+      } catch (err) {
+        ToastAndroid.show(err.message, ToastAndroid.LONG);
+      }
+    } else {
+      console.log('edit profile');
+    }
+  };
 
   return (
     <KeyView
@@ -86,6 +108,14 @@ export default function Register({navigation, route}) {
             <Heading3>{pageType}</Heading3>
             {params?.edit ? null : <Body1>Please register to continue</Body1>}
           </LoginHeader>
+          <Input
+            type="Name"
+            isImportant={true}
+            setInput={setName}
+            textInput={name}
+            isSecret={false}
+            handleError={handleError}
+          />
           <Input
             type="Email"
             isImportant={true}
@@ -138,17 +168,18 @@ export default function Register({navigation, route}) {
             textInput={description}
             isSecret={false}
             handleError={handleError}
+            isMultiline={true}
           />
           <AuthButton
             testID={pageType === 'Register' ? 'register-button' : 'edit-button'}
-            disabled={disabled}
+            disabled={disabled || isLoading}
             style={({pressed}) => [
               {
                 backgroundColor: pressed ? color.primary : color.primary,
               },
             ]}
             onPress={() => {
-              console.log('boo');
+              handlePress();
             }}>
             <AuthButtonText>{pageType}</AuthButtonText>
           </AuthButton>
