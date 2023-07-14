@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -9,15 +9,16 @@ import List from './src/pages/List';
 import Profile from './src/pages/Profile';
 import Scan from './src/pages/Scan';
 import Detail from './src/pages/Detail';
-import EditProfile from './src/pages/EditProfile';
 import AddRequest from './src/pages/AddRequest';
 import ScanResult from './src/pages/ScanResult';
-import {useSelector} from 'react-redux';
-import {selectAuth} from './src/redux/slices/authSlice';
-import {Image} from 'react-native';
+import {Image, ToastAndroid} from 'react-native';
 import Bottomnav from './src/components/BottomNav';
 import Header from './src/components/Header';
 import {color} from './src/styles/variables';
+import supabase from './src/helper/supabaseInit';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useDispatch, useSelector} from 'react-redux';
+import {getUser} from './src/redux/slices/userSlice';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -38,7 +39,7 @@ function ProfileStackScreen() {
   return (
     <ProfileStack.Navigator screenOptions={{headerShown: false}}>
       <ProfileStack.Screen name="ProfileScreen" component={Profile} />
-      <ProfileStack.Screen name="EditProfile" component={EditProfile} />
+      <ProfileStack.Screen name="EditProfile" component={Register} />
     </ProfileStack.Navigator>
   );
 }
@@ -53,13 +54,51 @@ function ScanStackScreen() {
 }
 
 export default function App() {
-  const userData = useSelector(selectAuth);
+  const [session, setSession] = useState(null);
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.user);
 
-  console.log('userData', userData);
+  useEffect(() => {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        setSession(session);
+        AsyncStorage.setItem('session', JSON.stringify(session));
+
+        dispatch(getUser(session?.user.id)).catch(err => {
+          ToastAndroid.show(err.message, ToastAndroid.SHORT);
+        });
+
+        AsyncStorage.setItem('user', JSON.stringify(user));
+      }
+      if (event === 'SIGNED_OUT') {
+        setSession(null);
+        AsyncStorage.removeItem('session');
+        AsyncStorage.removeItem('user');
+      }
+    });
+  }, [dispatch, user]);
+
+  useEffect(() => {
+    if (!session) {
+      AsyncStorage.getItem('session').then(session => {
+        if (session) {
+          setSession(JSON.parse(session));
+        }
+      });
+    }
+
+    if (!user && session) {
+      dispatch(getUser(session?.user.id)).catch(err => {
+        ToastAndroid.show(err.message, ToastAndroid.SHORT);
+      });
+
+      AsyncStorage.setItem('user', JSON.stringify(user));
+    }
+  }, [dispatch, session, user]);
 
   return (
     <NavigationContainer statusBarColor={color.primary}>
-      {!userData?.data ? (
+      {!session ? (
         <Stack.Navigator screenOptions={{headerShown: false}}>
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Register" component={Register} />
@@ -85,7 +124,7 @@ export default function App() {
                 borderBottomStartRadius: 10,
               },
               headerTitle: props => <Header {...props} />,
-              title: 'Gaming pussy nigga foulish man memeg',
+              title: user?.name,
             }}
           />
           <Tab.Screen

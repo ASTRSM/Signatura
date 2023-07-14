@@ -1,12 +1,15 @@
-import React, {useCallback, useState} from 'react';
-import {View, Platform, Pressable, ScrollView, StatusBar} from 'react-native';
+import React, {useState} from 'react';
+import {Platform, ScrollView, StatusBar, ToastAndroid} from 'react-native';
 import styled from 'styled-components/native';
-import {useDispatch, useSelector} from 'react-redux';
 import {color} from '../styles/variables';
-import {Heading3, Body1, Body2} from '../components/typographies';
+import {Heading3, Body1} from '../components/typographies';
 import {Input} from '../components/Input';
 import {scale, verticalScale} from 'react-native-size-matters';
 import AndroidDatePicker from '../components/AndroidDatePicker';
+import useInputError from '../hooks/InputError';
+import {useSignUpMutation} from '../redux/slices/apiSlice';
+import {useDispatch} from 'react-redux';
+import {editUser} from '../redux/slices/userSlice';
 
 const KeyView = styled.KeyboardAvoidingView`
   background-color: ${color.white};
@@ -47,27 +50,68 @@ const ShapeTop = styled.Image`
   width: ${scale(357 / 2)}px;
 `;
 
-export default function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function Register({navigation, route}) {
+  const dispatch = useDispatch();
+  const params = route?.params;
+  const pageType = params?.edit ? 'Edit Profile' : 'Register';
+  const [name, setName] = useState(params?.name ?? '');
+  const [email, setEmail] = useState(params?.email ?? '');
+  const [password, setPassword] = useState(params?.password ?? '');
   const [confirmPassword, setConfirm] = useState('');
-  const [birthday, setBirthday] = useState('');
-  const [institution, setInstitution] = useState('');
-  const [description, setDescription] = useState('');
-  const [inputError, setInputError] = useState({});
+  const [birthday, setBirthday] = useState(
+    params?.birthday ? new Date(params?.birthday) : new Date(),
+  );
+  const [institution, setInstitution] = useState(params?.institution ?? '');
+  const [description, setDescription] = useState(params?.description ?? '');
+  const [inputError, handleError] = useInputError();
+  const [isEditing, setIsEditing] = useState(false);
+  const [signUp, {isLoading}] = useSignUpMutation();
 
   let disabled = false;
   if (
-    Object.values(inputError).includes(true) ||
-    [email, password, confirmPassword, birthday].some(item => item.length === 0)
+    (Object.values(inputError).includes(true) ||
+      [email, password, confirmPassword, birthday, name].some(
+        item => item.length === 0,
+      )) &&
+    pageType === 'Register'
+  ) {
+    disabled = true;
+  } else if (
+    (Object.values(inputError).includes(true) ||
+      [birthday, name].some(item => item.length === 0)) &&
+    pageType === 'Edit Profile'
   ) {
     disabled = true;
   }
 
-  // useCallback for Input memoization
-  const handleError = useCallback((type, counter) => {
-    setInputError(prevState => ({...prevState, [type]: counter}));
-  }, []);
+  const handlePress = async () => {
+    if (pageType === 'Register') {
+      try {
+        await signUp({
+          email,
+          password,
+          name,
+          birthday,
+          institution,
+          description,
+        }).unwrap();
+        navigation.navigate('Login');
+      } catch (err) {
+        ToastAndroid.show(err.message, ToastAndroid.LONG);
+      }
+    } else {
+      try {
+        setIsEditing(true);
+        await dispatch(
+          editUser({id: params?.id, name, birthday, institution, description}),
+        ).unwrap();
+        setIsEditing(false);
+        navigation.goBack();
+      } catch (err) {
+        ToastAndroid.show(err.message, ToastAndroid.LONG);
+      }
+    }
+  };
 
   return (
     <KeyView
@@ -83,38 +127,53 @@ export default function Register() {
         <ShapeTop source={require('../../assets/images/ShapeLoginTop.png')} />
         <LoginView>
           <LoginHeader>
-            <Heading3>Register</Heading3>
-            <Body1>Please register to continue</Body1>
+            <Heading3>{pageType}</Heading3>
+            {params?.edit ? null : <Body1>Please register to continue</Body1>}
           </LoginHeader>
           <Input
-            type="Email"
+            type="Name"
             isImportant={true}
-            setInput={setEmail}
-            textInput={email}
+            setInput={setName}
+            textInput={name}
             isSecret={false}
             handleError={handleError}
           />
-          <Input
-            type="Password"
-            isImportant={true}
-            setInput={setPassword}
-            textInput={password}
-            isSecret={true}
-            handleError={handleError}
-          />
-          <Input
-            type="Confirm Password"
-            isImportant={true}
-            setInput={setConfirm}
-            textInput={confirmPassword}
-            isSecret={true}
-            handleError={handleError}
-            password={password}
-          />
+          {params?.edit ? null : (
+            <Input
+              type="Email"
+              isImportant={true}
+              setInput={setEmail}
+              textInput={email}
+              isSecret={false}
+              handleError={handleError}
+            />
+          )}
+          {params?.edit ? null : (
+            <>
+              <Input
+                type="Password"
+                isImportant={true}
+                setInput={setPassword}
+                textInput={password}
+                isSecret={true}
+                handleError={handleError}
+              />
+              <Input
+                type="Confirm Password"
+                isImportant={true}
+                setInput={setConfirm}
+                textInput={confirmPassword}
+                isSecret={true}
+                handleError={handleError}
+                password={password}
+              />
+            </>
+          )}
           <AndroidDatePicker
             type="Birthday"
             isImportant={true}
-            setInput={setBirthday}
+            setDate={setBirthday}
+            date={birthday}
             handleError={handleError}
             testID="birthday-input"
           />
@@ -133,18 +192,20 @@ export default function Register() {
             textInput={description}
             isSecret={false}
             handleError={handleError}
+            isMultiline={true}
           />
           <AuthButton
-            disabled={disabled}
+            testID={pageType === 'Register' ? 'register-button' : 'edit-button'}
+            disabled={disabled || isLoading || isEditing}
             style={({pressed}) => [
               {
                 backgroundColor: pressed ? color.primary : color.primary,
               },
             ]}
             onPress={() => {
-              console.log('boo');
+              handlePress();
             }}>
-            <AuthButtonText>REGISTER</AuthButtonText>
+            <AuthButtonText>{pageType}</AuthButtonText>
           </AuthButton>
         </LoginView>
       </ScrollView>

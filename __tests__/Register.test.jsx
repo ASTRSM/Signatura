@@ -14,7 +14,7 @@ describe('Register', () => {
   it('should found the register button disabled if inputs are empty', () => {
     renderWithProviders(<Register />);
 
-    const registerButton = screen.getByText('REGISTER');
+    const registerButton = screen.getByTestId('register-button');
 
     expect(registerButton).toBeDisabled();
   });
@@ -23,7 +23,7 @@ describe('Register', () => {
     renderWithProviders(<Register />);
 
     const emailInput = screen.getByPlaceholderText('Email');
-    const registerButton = screen.getByText('REGISTER');
+    const registerButton = screen.getByTestId('register-button');
 
     fireEvent.changeText(emailInput, 'Email');
 
@@ -35,7 +35,7 @@ describe('Register', () => {
     renderWithProviders(<Register />);
 
     const passwordInput = screen.getByPlaceholderText('Password');
-    const registerButton = screen.getByText('REGISTER');
+    const registerButton = screen.getByTestId('register-button');
 
     fireEvent.changeText(passwordInput, '1234567');
 
@@ -51,7 +51,7 @@ describe('Register', () => {
     const passwordInput = screen.getByPlaceholderText('Password');
     const confirmPasswordInput =
       screen.getByPlaceholderText('Confirm Password');
-    const registerButton = screen.getByText('REGISTER');
+    const registerButton = screen.getByTestId('register-button');
 
     fireEvent.changeText(passwordInput, 'password');
     fireEvent.changeText(confirmPasswordInput, 'password1');
@@ -64,7 +64,7 @@ describe('Register', () => {
     renderWithProviders(<Register />);
 
     const birthdayInput = screen.getByText('Please input your Birthday');
-    const registerButton = screen.getByText('REGISTER');
+    const registerButton = screen.getByTestId('register-button');
 
     fireEvent.changeText(birthdayInput, '');
 

@@ -4,7 +4,6 @@ import {color} from '../styles/variables';
 import IconContainer from './IconContainer';
 import {Body3, Body6, Body7, Heading5} from './typographies';
 import styled from 'styled-components/native';
-import {newestList} from '../helper/newestList';
 
 const ExchangeCardContainer = styled.Pressable`
   border-radius: 12px;
@@ -45,24 +44,22 @@ const Badge = styled.View`
     props.type === 'list' ? moderateScale(150) + 'px' : '100%'};
 `;
 
-const Pill = styled(Badge)`
+export const Pill = styled(Badge)`
   max-width: ${props =>
     props.type === 'list' ? moderateScale(64) + 'px' : '100%'};
 `;
 
-export default memo(function ExchangeCard({id, navigation, type}) {
-  const userId = 1;
-  const {
-    title,
-    description,
-    signeeId,
-    signee,
-    requesteeId,
-    requestee,
-    date,
-    status,
-  } = newestList.find(item => item.id === id);
-  const isRequestee = userId === requesteeId;
+export default memo(function ExchangeCard({
+  navigation,
+  type,
+  userId,
+  signature,
+  isRequesteeProps = null,
+}) {
+  const date = new Date(signature?.updated_at).toLocaleDateString('id-ID');
+  const isRequestee = isRequesteeProps
+    ? isRequesteeProps
+    : signature?.requestee_id === userId;
   const colorTheme = isRequestee ? color.primary : color.secondary;
   const icon = isRequestee
     ? require('../../assets/Icons/Doc.png')
@@ -70,7 +67,9 @@ export default memo(function ExchangeCard({id, navigation, type}) {
 
   return (
     <ExchangeCardContainer
-      onPress={() => navigation.navigate('Detail', {id})}
+      onPress={() =>
+        navigation.navigate('Detail', {id: signature?.id, isRequestee})
+      }
       color={colorTheme}
       type={type}>
       <LeftFlag color={colorTheme}>
@@ -79,31 +78,38 @@ export default memo(function ExchangeCard({id, navigation, type}) {
       <Detail type={type}>
         <DetailDuo type={type}>
           <Heading5 color={colorTheme} numberOfLines={type === 'list' ? 1 : 0}>
-            {title}
+            {signature?.title}
           </Heading5>
           <Body7 color={color.gray1}>{date}</Body7>
         </DetailDuo>
         <Body6 color={color.gray1} numberOfLines={type === 'list' ? 1 : 0}>
-          {description}
+          {signature?.description || '-'}
         </Body6>
         <DetailDuo type={type}>
           <Badge color={colorTheme} type={type}>
             <Body3 color={color.white} numberOfLines={1}>
               {isRequestee ? 'From:' : 'To:'}{' '}
               <Body6 color={color.white}>
-                {isRequestee ? signee : requestee}
+                {isRequestee
+                  ? signature?.signee_name
+                  : signature?.requestee_name}
               </Body6>
             </Body3>
           </Badge>
           <Pill
             color={
-              status === 'Pending'
+              signature?.status === 'pending'
                 ? color.warning
-                : status === 'Done'
+                : signature?.status === 'done'
                 ? color.success
                 : color.danger
             }>
-            <Body3 color={color.white}>{status}</Body3>
+            <Body3 color={color.white}>
+              {signature?.status[0].toUpperCase() + signature?.status.slice(1)}
+              {signature?.message &&
+                type === 'detail' &&
+                `: ${signature?.message}`}
+            </Body3>
           </Pill>
         </DetailDuo>
       </Detail>

@@ -12,7 +12,10 @@ const StyledTextInput = styled.TextInput`
   font-size: ${moderateScale(12)}px;
   line-height: ${moderateScale(16)}px;
   flex: 1;
-  height: ${moderateScale(32)}px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  min-height: ${moderateScale(32)}px;
+  height: ${props => (props.multiline ? 'auto' : moderateScale(32) + 'px')};
   color: ${color.gray1};
 `;
 
@@ -41,11 +44,12 @@ export const Input = memo(
     isImportant,
     setInput,
     textInput,
-    isSecret,
+    isSecret = false,
     handleError = () => {},
     handleKeyboard = () => {},
     password = '',
     testID,
+    isMultiline = false,
   }) => {
     const [inputError, setInputError] = useState('');
     const [isHidden, setIsHidden] = useState(isSecret);
@@ -108,6 +112,7 @@ export const Input = memo(
             testID={testID}
             placeholder={type}
             placeholderTextColor={color.gray3}
+            textAlignVertical="top"
             onChangeText={text => handleTextChange(text)}
             value={textInput}
             secureTextEntry={isHidden}
@@ -120,6 +125,8 @@ export const Input = memo(
             onFocus={() => {
               handleKeyboard(true);
             }}
+            multiline={isMultiline}
+            numberOfLines={isMultiline ? 4 : 1}
           />
           <Pressable
             onPress={() => {

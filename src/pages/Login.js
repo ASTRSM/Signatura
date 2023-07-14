@@ -1,20 +1,19 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   View,
-  Platform,
   Pressable,
   ScrollView,
-  Keyboard,
   StatusBar,
+  ToastAndroid,
 } from 'react-native';
 import styled from 'styled-components/native';
-import {useDispatch, useSelector} from 'react-redux';
 import {color} from '../styles/variables';
 import {Heading3, Body1, Body2} from '../components/typographies';
 import {Input} from '../components/Input';
 import {scale, verticalScale} from 'react-native-size-matters';
-import {loginExample} from '../redux/slices/authSlice';
 import KeyView from '../components/KeyView';
+import useInputError from '../hooks/InputError';
+import {useSignInMutation} from '../redux/slices/apiSlice';
 
 const AuthButton = styled.Pressable`
   background-color: ${color.primary};
@@ -70,11 +69,10 @@ const ShapeTop = styled.Image`
 export default function Login({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [inputError, setInputError] = useState({});
+  const [inputError, handleError] = useInputError();
+  const [signIn, {isLoading}] = useSignInMutation();
 
   const [keyboardOpen, setKeyboardOpen] = useState(false);
-
-  const dispatch = useDispatch();
 
   let disabled = false;
   if (
@@ -84,10 +82,13 @@ export default function Login({navigation}) {
     disabled = true;
   }
 
-  // useCallback for Input memoization
-  const handleError = useCallback((type, counter) => {
-    setInputError(prevState => ({...prevState, [type]: counter}));
-  }, []);
+  const handleLogin = async () => {
+    try {
+      await signIn({email, password}).unwrap();
+    } catch (err) {
+      ToastAndroid.show(err.message, ToastAndroid.LONG);
+    }
+  };
 
   return (
     <KeyView>
@@ -140,23 +141,23 @@ export default function Login({navigation}) {
                 <OptionsLink>Register</OptionsLink>
               </Pressable>
             </OptionsView>
-            <OptionsView>
+            {/* <OptionsView>
               <Body2 color={color.gray2}>Forgot</Body2>
               <Pressable>
                 <OptionsLink>password?</OptionsLink>
               </Pressable>
-            </OptionsView>
+            </OptionsView> */}
           </View>
           <AuthButton
             testID="login-button"
-            disabled={disabled}
+            disabled={disabled || isLoading}
             style={({pressed}) => [
               {
                 backgroundColor: pressed ? color.primary : color.primary,
               },
             ]}
             onPress={() => {
-              dispatch(loginExample({email, password}));
+              handleLogin();
             }}>
             <AuthButtonText>LOGIN</AuthButtonText>
           </AuthButton>

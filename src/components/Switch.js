@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components/native';
 import {moderateScale} from 'react-native-size-matters';
 import {color} from '../styles/variables';
-import {View} from 'react-native';
 import {Heading2} from './typographies';
 import IconContainer from './IconContainer';
 
@@ -10,7 +9,7 @@ const Container = styled.View`
   flex-direction: row;
   justify-content: space-between;
   gap: ${moderateScale(12)}px;
-  margin: ${moderateScale(24)}px 0;
+  margin-bottom: ${moderateScale(24)}px;
   align-items: center;
 `;
 
@@ -25,7 +24,7 @@ const Pill = styled.Pressable`
   justify-content: space-between;
 `;
 
-export default function Switch({page, setPage, navigation}) {
+export default function Switch({page, setPage}) {
   return (
     <Container>
       <Pill

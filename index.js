@@ -9,6 +9,7 @@ import App from './App';
 import {name as appName} from './app.json';
 import {Provider} from 'react-redux';
 import {setupStore} from './src/redux/store';
+import 'react-native-reanimated';
 
 const store = setupStore();
 

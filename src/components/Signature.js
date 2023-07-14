@@ -21,9 +21,13 @@ const SignatureContainer = styled.View`
 `;
 
 const SignatureImage = styled.Image`
-  max-width: ${moderateScale(150)}px;
-  max-height: ${moderateScale(150)}px;
+  width: ${moderateScale(150)}px;
+  height: ${moderateScale(150)}px;
   object-fit: contain;
+`;
+
+const QRContainer = styled.View`
+  border: 3px solid ${props => props.theme};
 `;
 
 const XLine = styled.View`
@@ -34,17 +38,35 @@ const XLine = styled.View`
   margin-bottom: ${moderateScale(2)}px;
 `;
 
-export default function Signature({image, id, isRequestee}) {
+export default function Signature({image, id, isRequestee = true}) {
   const QRValue = CryptoJS.AES.encrypt(id.toString(), STRING).toString();
-
+  const uniqueUrl = `${image}?${new Date()}`;
   return (
     <ImageContainer>
       <SignatureContainer>
-        <SignatureImage source={image} />
-        <QRCode value={QRValue} size={moderateScale(100)} />
+        {image && <SignatureImage source={{uri: uniqueUrl}} />}
+        <QRContainer theme={isRequestee ? color.primary : color.secondary}>
+          <QRCode value={QRValue} size={moderateScale(100)} />
+        </QRContainer>
       </SignatureContainer>
-      <XLine color={isRequestee ? color.primary : color.secondary} />
-      <Body2>{`#SGN-${id}`}</Body2>
     </ImageContainer>
   );
 }
+
+export const SignatureOnly = ({image}) => {
+  const uniqueUrl = `${image}?${new Date()}`;
+  return (
+    <ImageContainer>
+      <SignatureImage source={{uri: uniqueUrl}} />
+    </ImageContainer>
+  );
+};
+
+export const SignatureTag = ({id, isRequestee}) => {
+  return (
+    <>
+      <XLine color={isRequestee ? color.primary : color.secondary} />
+      <Body2>{`#ID-${id}`}</Body2>
+    </>
+  );
+};
