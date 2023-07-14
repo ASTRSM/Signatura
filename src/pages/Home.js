@@ -1,9 +1,7 @@
-import React from 'react';
-import {Button, ScrollView, StatusBar, Text, View} from 'react-native';
-import {useDispatch} from 'react-redux';
+import React, {useMemo} from 'react';
+import {StatusBar, ToastAndroid} from 'react-native';
 import KeyView from '../components/KeyView';
 import {Title2} from '../components/Titles';
-import {logoutExample} from '../redux/slices/authSlice';
 import styled from 'styled-components/native';
 import {
   Body8,
@@ -14,9 +12,10 @@ import {
 } from '../components/typographies';
 import {color} from '../styles/variables';
 import {moderateVerticalScale, moderateScale} from 'react-native-size-matters';
+import {useGetDashboardQuery} from '../redux/slices/apiSlice';
 import ExchangeCard from '../components/ExchangeCard';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
-import {newestList} from '../helper/newestList';
+import {useSelector} from 'react-redux';
+import {NoData} from '../components/NoData';
 
 const HomeContainer = styled.View`
   padding: 0 ${moderateScale(24)}px;
@@ -88,13 +87,25 @@ const ExchangeContainer = styled.ScrollView`
   gap: ${moderateScale(12)}px;
 `;
 
-const dashboardExample = {
-  pending: '01',
-  signed: '08',
-  toSign: '04',
-};
+export default function Home({navigation, route}) {
+  const userId = useSelector(state => state.user?.id);
+  const {data, error} = useGetDashboardQuery(userId, {
+    skip: !userId,
+  });
 
-export default function Home({navigation}) {
+  const list = useMemo(() => data?.signatures || [], [data?.signatures]);
+
+  const twoDigits = num => {
+    if (num < 10) {
+      return `0${num}`;
+    }
+    return num;
+  };
+
+  if (error) {
+    ToastAndroid.show(error.message, ToastAndroid.LONG);
+  }
+
   return (
     <KeyView>
       <StatusBar backgroundColor={color.primary} />
@@ -103,7 +114,12 @@ export default function Home({navigation}) {
         <DashboardContainer>
           <DashboardTop>
             <RequestPending
-              onPress={() => navigation.navigate('List')}
+              onPress={() =>
+                navigation.navigate('List', {
+                  params: {status: 'pending', page: 'request', dashboard: true},
+                  screen: 'ListScreen',
+                })
+              }
               style={({pressed}) => [
                 {
                   opacity: pressed ? 0.8 : 1,
@@ -113,25 +129,43 @@ export default function Home({navigation}) {
                 source={require('../../assets/images/DashboardShapeRed.png')}
               />
               <RequestPendingNumber color={color.white}>
-                {dashboardExample.pending}
+                {twoDigits(data?.requesting)}
               </RequestPendingNumber>
               <Heading4 color={color.white}>Request Pending</Heading4>
             </RequestPending>
             <RequestSigned
-              onPress={() => navigation.navigate('List')}
+              onPress={() =>
+                navigation.navigate('List', {
+                  params: {
+                    status: 'done',
+                    page: 'request',
+                    dashboard: true,
+                  },
+                  screen: 'ListScreen',
+                })
+              }
               style={({pressed}) => [
                 {
                   opacity: pressed ? 0.8 : 1,
                 },
               ]}>
               <Display5 color={color.primary}>
-                {dashboardExample.signed}
+                {twoDigits(data?.signed)}
               </Display5>
               <Body8 color={color.primary}>Request Signed</Body8>
             </RequestSigned>
           </DashboardTop>
           <DashboardBottom
-            onPress={() => navigation.navigate('List')}
+            onPress={() =>
+              navigation.navigate('List', {
+                params: {
+                  status: 'pending',
+                  page: 'sign',
+                  dashboard: true,
+                },
+                screen: 'ListScreen',
+              })
+            }
             style={({pressed}) => [
               {
                 opacity: pressed ? 0.8 : 1,
@@ -144,20 +178,25 @@ export default function Home({navigation}) {
               Document You have to
               <Heading2 color={color.white}> Sign</Heading2>
             </DashboardBottomText>
-            <Display5 color={color.white}>{dashboardExample.toSign}</Display5>
+            <Display5 color={color.white}>{twoDigits(data?.signing)}</Display5>
           </DashboardBottom>
         </DashboardContainer>
         <Title2 title="Latest Exchange" />
-        <ExchangeContainer>
-          {newestList.map(item => (
-            <ExchangeCard
-              key={item.id}
-              id={item.id}
-              navigation={navigation}
-              type="list"
-            />
-          ))}
-        </ExchangeContainer>
+        {list.length > 0 ? (
+          <ExchangeContainer>
+            {list.map(item => (
+              <ExchangeCard
+                key={item.id}
+                signature={item}
+                userId={userId}
+                navigation={navigation}
+                type="list"
+              />
+            ))}
+          </ExchangeContainer>
+        ) : (
+          <NoData />
+        )}
       </HomeContainer>
     </KeyView>
   );

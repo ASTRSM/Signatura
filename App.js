@@ -11,12 +11,14 @@ import Scan from './src/pages/Scan';
 import Detail from './src/pages/Detail';
 import AddRequest from './src/pages/AddRequest';
 import ScanResult from './src/pages/ScanResult';
-import {Image} from 'react-native';
+import {Image, ToastAndroid} from 'react-native';
 import Bottomnav from './src/components/BottomNav';
 import Header from './src/components/Header';
 import {color} from './src/styles/variables';
 import supabase from './src/helper/supabaseInit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useDispatch, useSelector} from 'react-redux';
+import {getUser} from './src/redux/slices/userSlice';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -53,15 +55,46 @@ function ScanStackScreen() {
 
 export default function App() {
   const [session, setSession] = useState(null);
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.user);
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         setSession(session);
         AsyncStorage.setItem('session', JSON.stringify(session));
+
+        dispatch(getUser(session?.user.id)).catch(err => {
+          ToastAndroid.show(err.message, ToastAndroid.SHORT);
+        });
+
+        AsyncStorage.setItem('user', JSON.stringify(user));
+      }
+      if (event === 'SIGNED_OUT') {
+        setSession(null);
+        AsyncStorage.removeItem('session');
+        AsyncStorage.removeItem('user');
       }
     });
-  }, []);
+  }, [dispatch, user]);
+
+  useEffect(() => {
+    if (!session) {
+      AsyncStorage.getItem('session').then(session => {
+        if (session) {
+          setSession(JSON.parse(session));
+        }
+      });
+    }
+
+    if (!user && session) {
+      dispatch(getUser(session?.user.id)).catch(err => {
+        ToastAndroid.show(err.message, ToastAndroid.SHORT);
+      });
+
+      AsyncStorage.setItem('user', JSON.stringify(user));
+    }
+  }, [dispatch, session, user]);
 
   return (
     <NavigationContainer statusBarColor={color.primary}>
@@ -91,7 +124,7 @@ export default function App() {
                 borderBottomStartRadius: 10,
               },
               headerTitle: props => <Header {...props} />,
-              title: 'Gaming pussy nigga foulish man memeg',
+              title: user?.name,
             }}
           />
           <Tab.Screen

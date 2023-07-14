@@ -12,14 +12,14 @@ export const Display1 = styled.Text`
 export const Display2 = styled.Text`
   font-family: 'PlusJakartaSans-SemiBold';
   font-size: ${moderateScale(16)}px;
-  line-height: ${moderateScale(24)}px;
+  line-height: ${moderateScale(19)}px;
   color: ${props => props.color || color.gray1};
 `;
 
 export const Display3 = styled.Text`
   font-family: 'PlusJakartaSans-Light';
   font-size: ${moderateScale(15)}px;
-  line-height: ${moderateScale(20)}px;
+  line-height: ${moderateScale(18)}px;
   color: ${props => props.color || color.gray1};
 `;
 
@@ -32,10 +32,10 @@ export const Display4 = styled.Text`
 
 export const Display5 = styled.Text`
   font-family: 'Oswald-Regular';
-  font-size: ${moderateScale(70)}px;
-  line-height: ${moderateScale(80)}px;
+  font-size: ${moderateScale(60)}px;
+  line-height: ${moderateScale(70)}px;
   color: ${props => props.color || color.gray1};
-  height: ${moderateScale(70)}px;
+  height: ${moderateScale(60)}px;
 `;
 
 export const Display6 = styled.Text`

@@ -8,6 +8,8 @@ import {scale, verticalScale} from 'react-native-size-matters';
 import AndroidDatePicker from '../components/AndroidDatePicker';
 import useInputError from '../hooks/InputError';
 import {useSignUpMutation} from '../redux/slices/apiSlice';
+import {useDispatch} from 'react-redux';
+import {editUser} from '../redux/slices/userSlice';
 
 const KeyView = styled.KeyboardAvoidingView`
   background-color: ${color.white};
@@ -49,24 +51,35 @@ const ShapeTop = styled.Image`
 `;
 
 export default function Register({navigation, route}) {
+  const dispatch = useDispatch();
   const params = route?.params;
   const pageType = params?.edit ? 'Edit Profile' : 'Register';
-  const [name, setName] = useState(params?.name ?? 'Dhafa D');
-  const [email, setEmail] = useState(params?.email ?? 'ddefrito84@gmail.com');
-  const [password, setPassword] = useState(params?.password ?? '123123123');
-  const [confirmPassword, setConfirm] = useState('123123123');
+  const [name, setName] = useState(params?.name ?? '');
+  const [email, setEmail] = useState(params?.email ?? '');
+  const [password, setPassword] = useState(params?.password ?? '');
+  const [confirmPassword, setConfirm] = useState('');
   const [birthday, setBirthday] = useState(
-    params?.birthday ? new Date(params?.birthday) : new Date(2000, 0, 1),
+    params?.birthday ? new Date(params?.birthday) : new Date(),
   );
   const [institution, setInstitution] = useState(params?.institution ?? '');
   const [description, setDescription] = useState(params?.description ?? '');
   const [inputError, handleError] = useInputError();
+  const [isEditing, setIsEditing] = useState(false);
   const [signUp, {isLoading}] = useSignUpMutation();
 
   let disabled = false;
   if (
-    Object.values(inputError).includes(true) ||
-    [email, password, confirmPassword, birthday].some(item => item.length === 0)
+    (Object.values(inputError).includes(true) ||
+      [email, password, confirmPassword, birthday, name].some(
+        item => item.length === 0,
+      )) &&
+    pageType === 'Register'
+  ) {
+    disabled = true;
+  } else if (
+    (Object.values(inputError).includes(true) ||
+      [birthday, name].some(item => item.length === 0)) &&
+    pageType === 'Edit Profile'
   ) {
     disabled = true;
   }
@@ -87,7 +100,16 @@ export default function Register({navigation, route}) {
         ToastAndroid.show(err.message, ToastAndroid.LONG);
       }
     } else {
-      console.log('edit profile');
+      try {
+        setIsEditing(true);
+        await dispatch(
+          editUser({id: params?.id, name, birthday, institution, description}),
+        ).unwrap();
+        setIsEditing(false);
+        navigation.goBack();
+      } catch (err) {
+        ToastAndroid.show(err.message, ToastAndroid.LONG);
+      }
     }
   };
 
@@ -116,14 +138,16 @@ export default function Register({navigation, route}) {
             isSecret={false}
             handleError={handleError}
           />
-          <Input
-            type="Email"
-            isImportant={true}
-            setInput={setEmail}
-            textInput={email}
-            isSecret={false}
-            handleError={handleError}
-          />
+          {params?.edit ? null : (
+            <Input
+              type="Email"
+              isImportant={true}
+              setInput={setEmail}
+              textInput={email}
+              isSecret={false}
+              handleError={handleError}
+            />
+          )}
           {params?.edit ? null : (
             <>
               <Input
@@ -172,7 +196,7 @@ export default function Register({navigation, route}) {
           />
           <AuthButton
             testID={pageType === 'Register' ? 'register-button' : 'edit-button'}
-            disabled={disabled || isLoading}
+            disabled={disabled || isLoading || isEditing}
             style={({pressed}) => [
               {
                 backgroundColor: pressed ? color.primary : color.primary,

@@ -1,16 +1,15 @@
 import React, {useEffect, useState} from 'react';
 
-import {StyleSheet, Text} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {useCameraDevices} from 'react-native-vision-camera';
 import {Camera} from 'react-native-vision-camera';
 import {useScanBarcodes, BarcodeFormat} from 'vision-camera-code-scanner';
 import styled from 'styled-components/native';
 import {moderateScale} from 'react-native-size-matters';
 import {color} from '../styles/variables';
-import {Display2, Heading3, Heading4} from '../components/typographies';
+import {Display2, Heading4} from '../components/typographies';
 import CryptoJS from 'crypto-js';
 import {STRING} from '@env';
-import {newestList} from '../helper/newestList';
 import {useIsFocused} from '@react-navigation/native';
 
 const Container = styled.View`
@@ -38,6 +37,7 @@ export default function Scan({navigation}) {
   const [errorText, setErrorText] = useState(null);
   const devices = useCameraDevices();
   const device = devices?.back;
+  const [result, setResult] = useState(null);
 
   const [frameProcessor, barcodes] = useScanBarcodes([BarcodeFormat.QR_CODE], {
     checkInverted: true,
@@ -48,8 +48,15 @@ export default function Scan({navigation}) {
   useEffect(() => {
     if (isFocused) {
       setErrorText(null);
+      setResult(null);
     }
   }, [isFocused]);
+
+  useEffect(() => {
+    if (result) {
+      navigation.navigate('ScanResult', {result});
+    }
+  }, [navigation, result]);
 
   useEffect(() => {
     try {
@@ -68,18 +75,7 @@ export default function Scan({navigation}) {
         CryptoJS.enc.Utf8,
       );
 
-      const isValid = newestList.find(
-        item => item.id === Number(decryptedData),
-      );
-
-      if (isValid) {
-        navigation.navigate('ScanResult', {isValid, decryptedData});
-      } else if (!isValid) {
-        navigation.navigate('ScanResult', {
-          isValid: false,
-          decryptedData: null,
-        });
-      }
+      setResult(decryptedData);
     } catch (error) {
       setErrorText(error.message);
 

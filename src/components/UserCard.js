@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {memo} from 'react';
 import {moderateScale} from 'react-native-size-matters';
 import {color} from '../styles/variables';
 import {Body2, Body5, Body9, Heading4} from './typographies';
@@ -30,7 +30,7 @@ const Bottom = styled.View`
   align-items: center;
 `;
 
-export default function UserCard({id, name, email, institution, onPress}) {
+const UserCard = memo(({id, name, email, institution, onPress}) => {
   return (
     <UserCardContainer onPress={onPress}>
       <Yline />
@@ -46,4 +46,6 @@ export default function UserCard({id, name, email, institution, onPress}) {
       </UserCardBody>
     </UserCardContainer>
   );
-}
+});
+
+export default UserCard;

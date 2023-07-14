@@ -2,7 +2,6 @@ import React from 'react';
 import {Heading1, Heading2} from './typographies';
 import styled from 'styled-components/native';
 import {color} from '../styles/variables';
-import {Text, View} from 'react-native';
 import {moderateScale} from 'react-native-size-matters';
 
 const Container = styled.View`

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, Pressable, Modal} from 'react-native';
+import {Modal} from 'react-native';
 import {moderateScale} from 'react-native-size-matters';
 import styled from 'styled-components/native';
 import {capFirstLetter} from '../helper/capFirstLetter';

@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components/native';
 import {moderateScale} from 'react-native-size-matters';
 import {DownloadIcon} from '../components/IconContainer';
-import {Display2, Display3} from '../components/typographies';
+import {Display2, Display3, Display4} from '../components/typographies';
 import {color} from '../styles/variables';
 import {capFirstLetter} from '../helper/capFirstLetter';
 
@@ -20,9 +20,18 @@ const Button = styled.Pressable`
   gap: ${moderateScale(6)}px;
   border-radius: 10px;
   flex-direction: row;
-  min-width: ${moderateScale(100)}px;
+  min-width: ${moderateScale(120)}px;
   min-height: ${moderateScale(45)}px;
   justify-content: center;
+  align-items: center;
+  border: 1px solid ${props => props.theme};
+  background-color: ${props => (props.fill ? props.theme : color.white)};
+`;
+
+const SmallButton = styled.Pressable`
+  border-radius: 6px;
+  max-width: ${moderateScale(200)}px;
+  padding: ${moderateScale(6)}px;
   align-items: center;
   border: 1px solid ${props => props.theme};
   background-color: ${props => (props.fill ? props.theme : color.white)};
@@ -34,39 +43,42 @@ export default function DetailButtons({
   status,
   isRequestee,
   setModalVisible,
+  image,
 }) {
   return (
     <ButtonsContainer>
-      {status === 'Done' && (
+      {status === 'done' && (
         <Buttons theme={theme} onPress={captureScreenshot} type="download" />
       )}
-      {status !== 'Done' && isRequestee && (
+      {status !== 'done' && isRequestee && (
         <Buttons theme={color.gray3} type="download" disabled={true} />
       )}
-      {status === 'Pending' && !isRequestee && (
+      {status === 'pending' && !isRequestee && (
         <Buttons
           theme={color.danger}
           onPress={() => setModalVisible('reject')}
           type="reject"
         />
       )}
-      {status === 'Pending' && !isRequestee && (
+      {status === 'pending' && !isRequestee && (
         <Buttons
-          theme={color.success}
+          theme={image ? color.success : color.gray3}
           onPress={() => setModalVisible('approve')}
-          type="approve"
+          type={image ? 'Approve' : 'No Sign'}
           fill={true}
+          disabled={!image}
         />
       )}
-      {status === 'Rejected' && !isRequestee && (
+      {status === 'rejected' && !isRequestee && (
         <Buttons theme={color.gray3} type="reject" disabled={true} />
       )}
-      {status === 'Rejected' && !isRequestee && (
+      {status === 'rejected' && !isRequestee && (
         <Buttons
-          theme={color.success}
+          theme={image ? color.success : color.gray3}
           onPress={() => setModalVisible('approve')}
-          type="approve"
+          type={image ? 'Approve' : 'No Sign'}
           fill={true}
+          disabled={!image}
         />
       )}
     </ButtonsContainer>
@@ -95,7 +107,11 @@ export function ModalButtons({
 export const Buttons = ({theme, onPress, type, fill, disabled = false}) => {
   const capitalizedType = capFirstLetter(type);
   return (
-    <Button theme={theme} onPress={onPress} fill={fill} disabled={disabled}>
+    <Button
+      theme={disabled ? color.gray3 : theme}
+      onPress={onPress}
+      fill={fill}
+      disabled={disabled}>
       {fill ? (
         <Display2 color={fill ? color.white : theme}>
           {capitalizedType}
@@ -107,5 +123,33 @@ export const Buttons = ({theme, onPress, type, fill, disabled = false}) => {
       )}
       {type === 'download' && <DownloadIcon size={24} color={theme} />}
     </Button>
+  );
+};
+
+export const SmallButtons = ({
+  theme,
+  onPress,
+  type,
+  fill,
+  disabled = false,
+}) => {
+  const capitalizedType = capFirstLetter(type);
+  return (
+    <SmallButton
+      theme={theme}
+      onPress={onPress}
+      fill={fill}
+      disabled={disabled}>
+      {fill ? (
+        <Display4 color={fill ? color.white : theme}>
+          {capitalizedType}
+        </Display4>
+      ) : (
+        <Display4 color={fill ? color.white : theme}>
+          {capitalizedType}
+        </Display4>
+      )}
+      {type === 'download' && <DownloadIcon size={24} color={theme} />}
+    </SmallButton>
   );
 };

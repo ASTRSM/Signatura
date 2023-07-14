@@ -14,7 +14,6 @@ import {scale, verticalScale} from 'react-native-size-matters';
 import KeyView from '../components/KeyView';
 import useInputError from '../hooks/InputError';
 import {useSignInMutation} from '../redux/slices/apiSlice';
-import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const AuthButton = styled.Pressable`
   background-color: ${color.primary};
@@ -68,8 +67,8 @@ const ShapeTop = styled.Image`
 `;
 
 export default function Login({navigation}) {
-  const [email, setEmail] = useState('ddefrito84@gmail.com');
-  const [password, setPassword] = useState('123123123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [inputError, handleError] = useInputError();
   const [signIn, {isLoading}] = useSignInMutation();
 
@@ -85,8 +84,7 @@ export default function Login({navigation}) {
 
   const handleLogin = async () => {
     try {
-      const data = await signIn({email, password}).unwrap();
-      await AsyncStorage.setItem('auth', JSON.stringify(data));
+      await signIn({email, password}).unwrap();
     } catch (err) {
       ToastAndroid.show(err.message, ToastAndroid.LONG);
     }
@@ -143,12 +141,12 @@ export default function Login({navigation}) {
                 <OptionsLink>Register</OptionsLink>
               </Pressable>
             </OptionsView>
-            <OptionsView>
+            {/* <OptionsView>
               <Body2 color={color.gray2}>Forgot</Body2>
               <Pressable>
                 <OptionsLink>password?</OptionsLink>
               </Pressable>
-            </OptionsView>
+            </OptionsView> */}
           </View>
           <AuthButton
             testID="login-button"

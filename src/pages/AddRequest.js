@@ -1,5 +1,12 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {Dimensions, Modal, Pressable, ScrollView, View} from 'react-native';
+import React, {memo, useEffect, useMemo, useState} from 'react';
+import {
+  Dimensions,
+  Modal,
+  Pressable,
+  ScrollView,
+  ToastAndroid,
+  View,
+} from 'react-native';
 import KeyView from '../components/KeyView';
 import styled from 'styled-components/native';
 import {moderateScale} from 'react-native-size-matters';
@@ -10,6 +17,15 @@ import {ProfileComponent} from './Profile';
 import {color} from '../styles/variables';
 import {Input} from '../components/Input';
 import {Buttons, ButtonsContainer} from '../components/DetailButtons';
+import {
+  useAddSignatureMutation,
+  useGetUserQuery,
+  useGetUsersQuery,
+} from '../redux/slices/apiSlice';
+import {useDebounce} from '@uidotdev/usehooks';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useSelector} from 'react-redux';
+import {Body2} from '../components/typographies';
 
 const {height} = Dimensions.get('window');
 
@@ -20,182 +36,199 @@ const Container = styled.View`
 
 const ModalContainer = styled.View`
   background-color: ${color.white};
-  padding: 0 ${moderateScale(24)}px;
+  padding: ${moderateScale(24)}px;
   height: ${height}px;
   flex: 1;
 `;
 
-export default function AddRequest() {
+const NoDataText = styled(Body2)`
+  color: ${color.gray3};
+  flex: 1;
+  text-align: center;
+  justify-content: center;
+  padding: ${moderateScale(24)}px;
+`;
+
+export default function AddRequest({navigation}) {
   const [search, setSearch] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [chosenUser, setChosenUser] = useState(null);
-  const [noDocument, setNoDocument] = useState('');
-  const [docTitle, setDocTitle] = useState('');
-  const [docDescription, setDocDescription] = useState('');
+  const [disabled, setDisabled] = useState(true);
+  const debounchSearch = useDebounce(search, 1000);
+  const userId = useSelector(state => state.user?.id);
 
-  const disabled = !docTitle;
-
-  useEffect(() => {
-    setNoDocument('');
-    setDocTitle('');
-    setDocDescription('');
-  }, [modalVisible]);
-
-  const handleSendRequest = useCallback(
-    (noDocument, docTitle, docDescription) => {
-      setModalVisible(null);
-      console.log(noDocument, docTitle, docDescription);
+  const {data: userList} = useGetUsersQuery(
+    {
+      keyword: debounchSearch,
+      id: userId,
     },
-    [],
+    {
+      skip: !debounchSearch && !userId,
+    },
   );
 
-  const userList = [
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'John@gmail.com',
-      institution: 'PT Sarung Indonesia',
-      birthday: (Date.now() - 800000000000).toString(),
-      description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies aliquam, nunc nisl ultricies nunc, vitae ultrici',
-    },
-    {
-      id: '2',
-      name: 'Bob Doe',
-      email: 'Bob@gmail.com',
-      institution: 'Universitas Gaming',
-      birthday: (Date.now() - 800000000000).toString(),
-      description: '',
-    },
-    {
-      id: '3',
-      name: 'Jane Doe',
-      email: 'jane@gmail.com',
-      institution: 'Universitas Bambang',
-      birthday: (Date.now() - 800000000000).toString(),
-      description: 'Lorem Ipsum dolor sit amet',
-    },
-  ];
+  const memoizedUserList = useMemo(() => userList || [], [userList]);
 
   return (
     <KeyView>
       <Container>
         <Title title="Add Request" />
         <Title2 title="Choose User" />
-        <Searchbar search={search} setSearch={setSearch} />
+        <Searchbar
+          search={search}
+          setSearch={setSearch}
+          debounchSearch={debounchSearch}
+        />
         <ScrollView>
-          {userList.map((user, index) => (
-            <UserCard
-              key={index}
-              id={user.id}
-              name={user.name}
-              email={user.email}
-              institution={user.institution}
-              onPress={() => {
-                setChosenUser(user);
-                setModalVisible(true);
-              }}
-            />
-          ))}
+          {memoizedUserList?.length ? (
+            memoizedUserList.map((user, index) => (
+              <UserCard
+                key={index}
+                id={user?.id.split('-')[0]}
+                name={user?.name}
+                email={user?.email}
+                institution={user?.institution || 'No Institution'}
+                onPress={() => {
+                  setChosenUser(user);
+                  setModalVisible(true);
+                }}
+              />
+            ))
+          ) : (
+            <NoDataText>No Data</NoDataText>
+          )}
         </ScrollView>
       </Container>
       <RequestModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
-        chosenUser={chosenUser}
-        setNoDocument={setNoDocument}
-        setDocTitle={setDocTitle}
-        setDocDescription={setDocDescription}
-        noDocument={noDocument}
-        docTitle={docTitle}
-        docDescription={docDescription}
+        chosenUserId={chosenUser?.id}
         disabled={disabled}
-        handleSendRequest={handleSendRequest}
+        setDisabled={setDisabled}
+        navigation={navigation}
       />
     </KeyView>
   );
 }
 
-function RequestModal({
-  modalVisible,
-  setModalVisible,
-  chosenUser,
-  setNoDocument,
-  setDocTitle,
-  setDocDescription,
-  noDocument,
-  docTitle,
-  docDescription,
-  disabled,
-  handleSendRequest,
-}) {
-  const theme = color.primary;
-  return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={!!modalVisible}
-      onRequestClose={() => {
+const RequestModal = memo(
+  ({
+    modalVisible,
+    setModalVisible,
+    chosenUserId,
+    disabled,
+    setDisabled,
+    navigation,
+  }) => {
+    const [noDocument, setNoDocument] = useState('');
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [addSignature] = useAddSignatureMutation();
+    const {data: chosenUser} = useGetUserQuery(chosenUserId, {
+      skip: !chosenUserId,
+    });
+    useEffect(() => {
+      if (title) {
+        setDisabled(false);
+      } else {
+        setDisabled(true);
+      }
+    }, [title, setDisabled]);
+
+    useEffect(() => {
+      setNoDocument('');
+      setTitle('');
+      setDescription('');
+    }, [modalVisible]);
+
+    const handleSendRequest = async () => {
+      const session = await AsyncStorage.getItem('session');
+      const requestee = JSON.parse(session)?.user.id;
+      const signee = chosenUser?.id;
+      try {
+        await addSignature({
+          noDocument,
+          title,
+          description,
+          requestee,
+          signee,
+        }).unwrap();
         setModalVisible(null);
-      }}>
-      <ScrollView>
-        <ModalContainer>
-          <Title2 title="Signee" color={theme} />
-          <ProfileComponent
-            id={chosenUser?.id}
-            name={chosenUser?.name}
-            email={chosenUser?.email}
-            institution={chosenUser?.institution}
-            birthday={chosenUser?.birthday}
-            description={chosenUser?.description}
-            theme={theme}
-          />
-          <Title2 title="Request" color={theme} />
-          <Input
-            type="No. Document"
-            isImportant={false}
-            setInput={setNoDocument}
-            textInput={noDocument}
-          />
-          <Input
-            type="Document Title"
-            isImportant={true}
-            setInput={setDocTitle}
-            textInput={docTitle}
-          />
-          <Input
-            type="Document Description"
-            isImportant={false}
-            setInput={setDocDescription}
-            textInput={docDescription}
-          />
-          <Pressable
-            disabled={disabled}
-            onPress={() => {
-              setModalVisible(null);
-            }}
-            text="Send Request"
-          />
-          <View>
-            <ButtonsContainer>
-              <Buttons
-                theme={color.danger}
-                onPress={() => setModalVisible(null)}
-                type="cancel"
-              />
-              <Buttons
-                theme={disabled ? color.gray3 : color.success}
-                onPress={() =>
-                  handleSendRequest(noDocument, docTitle, docDescription)
-                }
-                type="send"
-                fill={true}
-                disabled={disabled}
-              />
-            </ButtonsContainer>
-          </View>
-        </ModalContainer>
-      </ScrollView>
-    </Modal>
-  );
-}
+        navigation.goBack();
+        ToastAndroid.show('Request Sent', ToastAndroid.SHORT);
+      } catch (error) {
+        ToastAndroid.show(error.message, ToastAndroid.LONG);
+      }
+    };
+
+    const theme = color.primary;
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={!!modalVisible}
+        onRequestClose={() => {
+          setModalVisible(null);
+        }}>
+        <ScrollView>
+          <ModalContainer>
+            <Title2 title="Signee" color={theme} />
+            <ProfileComponent
+              id={chosenUser?.id.split('-')[0]}
+              name={chosenUser?.name}
+              email={chosenUser?.email}
+              institution={chosenUser?.institution || '-'}
+              birthday={chosenUser?.birthday}
+              description={chosenUser?.description || '-'}
+              theme={theme}
+            />
+            <Title2 title="Request" color={theme} />
+            <Input
+              type="No. Document"
+              isImportant={false}
+              setInput={setNoDocument}
+              textInput={noDocument}
+            />
+            <Input
+              type="Document Title"
+              isImportant={true}
+              setInput={setTitle}
+              textInput={title}
+            />
+            <Input
+              type="Document Description"
+              isImportant={false}
+              setInput={setDescription}
+              textInput={description}
+            />
+            <Pressable
+              disabled={disabled}
+              onPress={() => {
+                setModalVisible(null);
+              }}
+              text="Send Request"
+            />
+            <View>
+              <ButtonsContainer>
+                <Buttons
+                  theme={color.danger}
+                  onPress={() => setModalVisible(null)}
+                  type="cancel"
+                />
+                <Buttons
+                  theme={disabled ? color.gray3 : color.success}
+                  onPress={() =>
+                    handleSendRequest(noDocument, title, description)
+                  }
+                  type="send"
+                  fill={true}
+                  disabled={disabled}
+                />
+              </ButtonsContainer>
+            </View>
+          </ModalContainer>
+        </ScrollView>
+      </Modal>
+    );
+  },
+);

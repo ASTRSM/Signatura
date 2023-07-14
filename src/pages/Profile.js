@@ -1,15 +1,21 @@
 import React, {useRef, useState} from 'react';
-import {StatusBar, Text, ToastAndroid, View} from 'react-native';
+import {ScrollView, StatusBar, ToastAndroid, View} from 'react-native';
 import {moderateScale} from 'react-native-size-matters';
 import ViewShot from 'react-native-view-shot';
 import styled from 'styled-components/native';
-import {Buttons} from '../components/DetailButtons';
-import {SignatureOnly} from '../components/Signature';
+import {Buttons, SmallButtons} from '../components/DetailButtons';
+import {SignatureOnly, SignatureTag} from '../components/Signature';
 import Title from '../components/Titles';
 import {Body2, Body5, Display2, Display4} from '../components/typographies';
 import {color} from '../styles/variables';
-import RNFS from 'react-native-fs';
-import ImagePicker from 'react-native-image-crop-picker';
+import {FileSystem} from 'react-native-file-access';
+import {
+  useAddImageMutation,
+  useGetImageQuery,
+  useSignOutMutation,
+} from '../redux/slices/apiSlice';
+import {useSelector} from 'react-redux';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 const Container = styled.View`
   padding: 0 ${moderateScale(24)}px;
@@ -50,18 +56,47 @@ const ShotContainer = styled.View`
   margin: ${moderateScale(32)}px;
 `;
 
+const NotAvailableContainer = styled.View`
+  justify-content: center;
+  align-items: center;
+  margin: ${moderateScale(32)}px;
+`;
+
+const NotAvailable = styled.View`
+  height: ${moderateScale(150)}px;
+  width: ${moderateScale(150)}px;
+  padding: ${moderateScale(12)}px;
+  background-color: ${color.gray4};
+  border-radius: 10px;
+  justify-content: center;
+  align-items: center;
+`;
+
 export default function Profile({navigation}) {
+  const [isLoading, setIsLoading] = useState(false);
   const [errorText, setErrorText] = useState('');
   const theme = color.primary;
-  const [newUri, setNewUri] = useState('');
   const ref = useRef();
+  const [signOut] = useSignOutMutation();
+  const profile = useSelector(state => state.user);
+  const [addImage] = useAddImageMutation();
+  const {data: image} = useGetImageQuery(profile.id, {
+    skip: !profile.id,
+  });
+
+  const handleSignOut = async () => {
+    try {
+      await signOut().unwrap();
+    } catch (error) {
+      ToastAndroid.show(error.toString(), ToastAndroid.LONG);
+    }
+  };
 
   const captureScreenshot = async name => {
     try {
       const uri = await ref.current.capture();
-      const directory = `${RNFS.DocumentDirectoryPath}/${name}_signature.png`;
 
-      await RNFS.copyFile(uri, directory);
+      await FileSystem.cpExternal(uri, `${name}_signature.png`, 'downloads');
       setErrorText('');
       showToast('Signature saved');
     } catch (error) {
@@ -70,17 +105,35 @@ export default function Profile({navigation}) {
   };
 
   const pickImage = async () => {
-    const result = await ImagePicker.openPicker({
-      width: 200,
-      height: 200,
-      cropping: true,
+    const options = {
+      mediaType: 'photo',
+      includeBase64: true,
+      maxHeight: 500,
+      maxWidth: 500,
+    };
+    setIsLoading(true);
+    const result = await launchImageLibrary(options, response => {
+      if (response.errorCode === 'camera_unavailable') {
+        setErrorText('Camera not available on device');
+      } else if (response.errorCode === 'permission') {
+        setErrorText('Permission not satisfied');
+      } else if (response.errorCode === 'others') {
+        setErrorText(response.errorMessage);
+      }
     });
 
-    console.log(result);
-
-    if (result) {
-      setNewUri(result.path);
-      showToast('Signature changed');
+    if (!result.didCancel) {
+      try {
+        await addImage({
+          id: profile.id,
+          base64: result.assets[0].base64,
+        }).unwrap();
+        setIsLoading(false);
+        showToast('Signature changed');
+      } catch (error) {
+        showToast(error.message);
+        setIsLoading(false);
+      }
     }
   };
 
@@ -88,68 +141,63 @@ export default function Profile({navigation}) {
     ToastAndroid.show(message, ToastAndroid.SHORT);
   };
 
-  const profile = {
-    id: '123',
-    name: 'Dhafa Defrita Rama Yudistira',
-    email: 'dhafa@gmail.com',
-    birthday: Date.now() - 900000000000,
-    institution: 'Universitas Gunadarma',
-    description: 'Mahasiswa semester 8',
-  };
-
   const date = new Date(profile.birthday).toLocaleDateString('en-GB');
   return (
     <Container>
-      <StatusBar backgroundColor={theme} />
-      <Title title="Detail" lineColor={theme} />
-      <ProfileComponent
-        id={profile.id}
-        name={profile.name}
-        email={profile.email}
-        birthday={date}
-        institution={profile.institution}
-        description={profile.description}
-        theme={theme}
-      />
-      <ShotContainer>
-        <ViewShot
-          ref={ref}
-          options={{
-            format: 'png',
-            quality: 1,
-          }}>
-          <SignatureOnly
-            image={
-              newUri ? {uri: newUri} : require('../../assets/images/TTD.png')
-            }
-            id={profile.id}
-            isRequestee={true}
-          />
-        </ViewShot>
-      </ShotContainer>
-      <Body2 color={color.danger}>{errorText}</Body2>
-      <ButtonsContainer>
-        <ButtonFs>
-          <Buttons
-            type="Change"
-            theme={theme}
-            fill={true}
-            onPress={() => pickImage()}
-          />
-          <Buttons
-            type="download"
-            theme={theme}
-            onPress={() => captureScreenshot(profile.name)}
-          />
-        </ButtonFs>
-        <Buttons
-          type="Edit Profile"
+      <ScrollView>
+        <StatusBar backgroundColor={theme} />
+        <Title title="Profile" lineColor={theme} />
+        <ProfileComponent
+          id={profile.id}
+          name={profile.name}
+          email={profile.email}
+          birthday={date}
+          institution={profile.institution}
+          description={profile.description}
           theme={theme}
-          onPress={() =>
-            navigation.navigate('EditProfile', {...profile, edit: true})
-          }
+          navigation={navigation}
+          profile={profile}
         />
-      </ButtonsContainer>
+        {image ? (
+          <ShotContainer>
+            <ViewShot
+              ref={ref}
+              options={{
+                format: 'png',
+                quality: 1,
+              }}>
+              <SignatureOnly image={image?.publicUrl} />
+            </ViewShot>
+            <SignatureTag id={profile?.id?.split('-')[0]} isRequestee={true} />
+          </ShotContainer>
+        ) : (
+          <NotAvailableContainer>
+            <NotAvailable>
+              <Display4>Signature is not available yet</Display4>
+            </NotAvailable>
+          </NotAvailableContainer>
+        )}
+        <Body2 color={color.danger}>{errorText}</Body2>
+        <ButtonsContainer>
+          <ButtonFs>
+            <Buttons
+              type={image ? 'change' : 'add Signature +'}
+              theme={theme}
+              fill={true}
+              onPress={() => pickImage()}
+            />
+            {image && (
+              <Buttons
+                type="download"
+                theme={theme}
+                onPress={() => captureScreenshot(profile.name)}
+                disabled={!image}
+              />
+            )}
+          </ButtonFs>
+          <Buttons type="Logout" theme={color.danger} onPress={handleSignOut} />
+        </ButtonsContainer>
+      </ScrollView>
     </Container>
   );
 }
@@ -162,13 +210,15 @@ export const ProfileComponent = ({
   institution,
   description,
   theme,
+  navigation,
+  profile = null,
 }) => {
   return (
     <ProfileContainer>
       <YLine theme={theme} />
       <ProfileBody>
         <View>
-          <Body2>{`#ID-${id}`}</Body2>
+          <Body2>{`#ID-${id?.split('-')[0]}`}</Body2>
           <Display2>{name}</Display2>
           <Display4>{email}</Display4>
         </View>
@@ -178,12 +228,21 @@ export const ProfileComponent = ({
         </View>
         <View>
           <Body2 color={theme}>Institution</Body2>
-          <Body5>{institution}</Body5>
+          <Body5>{institution || '-'}</Body5>
         </View>
         <View>
           <Body2 color={theme}>Description</Body2>
-          <Body5>{description}</Body5>
+          <Body5>{description || '-'}</Body5>
         </View>
+        {profile && (
+          <SmallButtons
+            type="Edit Profile"
+            theme={theme}
+            onPress={() =>
+              navigation.navigate('EditProfile', {...profile, edit: true})
+            }
+          />
+        )}
       </ProfileBody>
     </ProfileContainer>
   );

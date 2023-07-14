@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {ScrollView, StatusBar, Text, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {Keyboard, ScrollView, StatusBar} from 'react-native';
 import KeyView from '../components/KeyView';
 import Switch from '../components/Switch';
 import Title from '../components/Titles';
@@ -8,24 +8,85 @@ import styled from 'styled-components/native';
 import {moderateScale} from 'react-native-size-matters';
 import ExchangeCard from '../components/ExchangeCard';
 import Filter from '../components/Filter';
-import {newestList} from '../helper/newestList';
+import {useGetSignaturesQuery} from '../redux/slices/apiSlice';
+import {useSelector} from 'react-redux';
+import {NoData} from '../components/NoData';
+import IconContainer from '../components/IconContainer';
 
 const Container = styled.View`
   padding: 0 ${moderateScale(24)}px;
   flex: 1;
 `;
 
-export default function List({navigation}) {
-  const [list, setList] = useState(newestList);
-  const [page, setPage] = useState('request');
-  const [search, setSearch] = useState('');
-  const [dateSort, setDateSort] = useState('desc');
-  const [nameSort, setNameSort] = useState('desc');
-  const [status, setStatus] = useState('desc');
+const LoadingContainer = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+`;
 
-  const handleFilter = () => {
-    console.log('filtered');
-  };
+export default function List({navigation, route}) {
+  const params = route.params;
+  const userId = useSelector(state => state.user?.id);
+  const [page, setPage] = useState(params?.page || 'request');
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('');
+  const [status, setStatus] = useState(params?.status || '');
+  const [keyboardShown, setKeyboardShown] = useState(false);
+  const [parameters, setParameters] = useState({
+    search: '',
+    sort: '',
+    status: params?.status || '',
+  });
+
+  const {data, isFetching} = useGetSignaturesQuery({
+    ...parameters,
+    id: userId,
+    page,
+  });
+
+  useEffect(() => {
+    if (params?.page) {
+      setPage(params.page);
+    }
+    if (params?.status) {
+      setStatus(params.status);
+    }
+    if (params?.page || params?.status) {
+      setParameters({
+        search: '',
+        sort: '',
+        status: params?.status || '',
+      });
+
+      navigation.setParams({
+        page: '',
+        status: '',
+      });
+    }
+  }, [navigation, params, page]);
+
+  useEffect(() => {
+    Keyboard.addListener('keyboardDidShow', () => setKeyboardShown(true));
+    Keyboard.addListener('keyboardDidHide', () => setKeyboardShown(false));
+    return () => {
+      Keyboard.removeAllListeners('keyboardDidHide');
+      Keyboard.removeAllListeners('keyboardDidShow');
+    };
+  }, []);
+
+  const list = useMemo(() => data || [], [data]);
+
+  const handleFilter = useCallback(() => {
+    setParameters({
+      search,
+      sort,
+      status,
+    });
+    navigation.setParams({
+      page: '',
+      status: '',
+    });
+  }, [navigation, search, sort, status]);
 
   return (
     <KeyView>
@@ -41,34 +102,38 @@ export default function List({navigation}) {
         <Filter
           search={search}
           setSearch={setSearch}
-          dateSort={dateSort}
-          setDateSort={setDateSort}
-          nameSort={nameSort}
-          setNameSort={setNameSort}
+          sort={sort}
+          setSort={setSort}
           status={status}
           setStatus={setStatus}
           handleFilter={handleFilter}
           isRequest={page === 'request'}
           navigation={navigation}
+          isFetching={isFetching}
         />
-        <ScrollView>
-          {newestList.map(item => (
-            <ExchangeCard
-              key={item.id}
-              id={item.id}
-              navigation={navigation}
-              type="list"
+        {isFetching ? (
+          <LoadingContainer>
+            <IconContainer
+              size={32}
+              source={require('../../assets/images/Loading.gif')}
             />
-          ))}
-          {newestList.map(item => (
-            <ExchangeCard
-              key={item.id}
-              id={item.id}
-              navigation={navigation}
-              type="list"
-            />
-          ))}
-        </ScrollView>
+          </LoadingContainer>
+        ) : list.length > 0 ? (
+          <ScrollView>
+            {list.map(item => (
+              <ExchangeCard
+                key={item.id}
+                id={item.id}
+                navigation={navigation}
+                userId={userId}
+                signature={item}
+                type="list"
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <NoData keyboardShown={keyboardShown} />
+        )}
       </Container>
     </KeyView>
   );

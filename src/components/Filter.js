@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {memo, useEffect, useState} from 'react';
 import {moderateScale} from 'react-native-size-matters';
-import {StyleSheet, Text} from 'react-native';
+import {Pressable, StyleSheet} from 'react-native';
 import styled from 'styled-components/native';
 import IconContainer from './IconContainer';
 import {Body2} from './typographies';
@@ -17,7 +17,7 @@ const SearchContainer = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0 ${moderateScale(8)}px;
+  padding: 0 ${moderateScale(16)}px;
   background-color: ${color.white};
   border-radius: 30px;
   border: 1px solid ${color.gray5};
@@ -66,25 +66,28 @@ const ButtonsContainer = styled.View`
   gap: ${moderateScale(8)}px;
 `;
 
-export default function Filter({
+export default memo(function Filter({
   search,
   setSearch,
-  dateSort,
-  setDateSort,
-  nameSort,
-  setNameSort,
+  sort,
+  setSort,
   status,
   setStatus,
   handleFilter,
   isRequest,
   navigation,
+  isFetching,
 }) {
   return (
     <FilterContainer>
-      <Searchbar search={search} setSearch={setSearch} />
+      <Searchbar
+        search={search}
+        setSearch={setSearch}
+        debounchSearch={search}
+        isFetching={isFetching}
+      />
       <SortingContainer>
-        <FilterItem
-          onPress={() => setDateSort(dateSort === 'desc' ? 'asc' : 'desc')}>
+        <FilterItem onPress={() => setSort(sort !== 'date' ? 'date' : '')}>
           <IconContainer
             size={15}
             source={require('../../assets/Icons/DateSmall.png')}
@@ -93,15 +96,14 @@ export default function Filter({
           <IconContainer
             size={15}
             source={
-              dateSort === 'desc'
+              sort !== 'date'
                 ? require('../../assets/Icons/SortDown.png')
                 : require('../../assets/Icons/SortUp.png')
             }
           />
         </FilterItem>
         <FilterLine />
-        <FilterItem
-          onPress={() => setNameSort(nameSort === 'desc' ? 'asc' : 'desc')}>
+        <FilterItem onPress={() => setSort(sort !== 'name' ? 'name' : '')}>
           <IconContainer
             size={15}
             source={require('../../assets/Icons/Person.png')}
@@ -110,7 +112,7 @@ export default function Filter({
           <IconContainer
             size={15}
             source={
-              nameSort === 'desc'
+              sort !== 'name'
                 ? require('../../assets/Icons/SortDown.png')
                 : require('../../assets/Icons/SortUp.png')
             }
@@ -122,17 +124,13 @@ export default function Filter({
           onValueChange={itemValue => setStatus(itemValue)}
           style={style.picker}
           fontFamily="PlusJakartaSans-SemiBold">
-          <Picker.Item label="Status" value="all" style={style.pickerItem} />
+          <Picker.Item label="All" value="" style={style.pickerItem} />
           <Picker.Item
             label="Pending"
             value="pending"
             style={style.pickerItem}
           />
-          <Picker.Item
-            label="Approved"
-            value="approved"
-            style={style.pickerItem}
-          />
+          <Picker.Item label="Done" value="done" style={style.pickerItem} />
           <Picker.Item
             label="Rejected"
             value="rejected"
@@ -154,7 +152,7 @@ export default function Filter({
       </ButtonsContainer>
     </FilterContainer>
   );
-}
+});
 
 const style = StyleSheet.create({
   picker: {
@@ -173,18 +171,38 @@ const style = StyleSheet.create({
   },
 });
 
-export function Searchbar({search, setSearch}) {
+export function Searchbar({search, setSearch, debounchSearch, isFetching}) {
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (debounchSearch !== search || isFetching) {
+      setIsSearching(true);
+    } else {
+      setIsSearching(false);
+    }
+  }, [debounchSearch, isFetching, search]);
+
   return (
     <SearchContainer>
       <SearchInput
-        placeholder="Search"
+        placeholder="Search..."
+        placeholderTextColor={color.gray3}
         value={search}
         onChangeText={setSearch}
       />
-      <IconContainer
-        size={15}
-        source={require('../../assets/Icons/Search.png')}
-      />
+      <Pressable>
+        {isSearching ? (
+          <IconContainer
+            size={15}
+            source={require('../../assets/images/Loading.gif')}
+          />
+        ) : (
+          <IconContainer
+            size={15}
+            source={require('../../assets/Icons/Search.png')}
+          />
+        )}
+      </Pressable>
     </SearchContainer>
   );
 }
